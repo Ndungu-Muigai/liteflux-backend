@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, session, make_response
+from flask import Flask, jsonify, request, session, make_response, send_file
 from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -10,6 +10,7 @@ from datetime import timedelta
 from Admin_creation import send_admin_credentials
 from AutoGenerations.password import random_password
 import os
+from io import BytesIO
 
 app = Flask(__name__)
 # Initialize JWT
@@ -78,13 +79,6 @@ def get_products():
 @jwt_required()
 def add_product():
     email = get_jwt_identity()
-
-    # Check if required fields are present in the form data
-    required_fields = ["product_name", "product_description", "product_price", "product_quantity"]
-    for field in required_fields:
-        if field not in request.form:
-            return jsonify({"error": f"Missing required field: {field}"}), 400
-
     try:
         product_name = request.form["product_name"]
         product_description = request.form["product_description"]
@@ -93,16 +87,12 @@ def add_product():
         images = request.files.getlist("product_images")
 
         new_product = Product(stock_quantity=product_quantity, name=product_name, description=product_description, price=product_price)
-
         db.session.add(new_product)
         db.session.commit()
 
-        product_id = new_product.id
-
         for image in images:
-            image_file_name = secure_filename(image.filename)
             image_blob = image.read()
-            product_image = ProductImage(product_id=product_id, image_blob=image_blob, image_name=image_file_name)
+            product_image = ProductImage(product_id=new_product.id, image_blob=image_blob)
             db.session.add(product_image)
 
         db.session.commit()
@@ -110,9 +100,13 @@ def add_product():
         return jsonify({"success": "Product added successfully!"}), 201
 
     except Exception as e:
-        # Log the error for debugging
         app.logger.error(f"Error adding product: {e}")
         return jsonify({"error": "An error occurred while adding the product"}), 500
+
+@app.route('/admin/products/images/<int:image_id>', methods=['GET'])
+def get_image(image_id):
+    image = ProductImage.query.get_or_404(image_id)
+    return send_file(BytesIO(image.image_blob), mimetype='image/jpeg')
 
 @app.route("/admin/products/<int:product_id>", methods=["GET", "POST"])
 @jwt_required()
