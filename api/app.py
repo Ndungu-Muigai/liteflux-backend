@@ -108,6 +108,7 @@ def get_image(image_id):
     image = ProductImage.query.get_or_404(image_id)
     return send_file(BytesIO(image.image_blob), mimetype='image/jpeg')
 
+
 @app.route("/admin/products/<int:product_id>", methods=["GET", "POST"])
 @jwt_required()
 def product_by_id(product_id):
