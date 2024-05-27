@@ -99,17 +99,10 @@ def add_product():
 
         product_id = new_product.id
 
-        # Ensure the upload directory exists
-        upload_folder = app.config['UPLOAD_FOLDER']
-        if not os.path.exists(upload_folder):
-            os.makedirs(upload_folder)
-
         for image in images:
             image_file_name = secure_filename(image.filename)
-            unique_file_name = str(uuid.uuid1()) + "_" + image_file_name
-            image_path = os.path.join(upload_folder, unique_file_name)
-            image.save(image_path)
-            product_image = ProductImage(product_id=product_id, url=unique_file_name)
+            image_blob = image.read()
+            product_image = ProductImage(product_id=product_id, image_blob=image_blob, image_name=image_file_name)
             db.session.add(product_image)
 
         db.session.commit()
