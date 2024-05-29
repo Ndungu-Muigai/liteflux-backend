@@ -21,9 +21,8 @@ if __name__ == "__main__":
         # db.session.add(new_order_product)
 
         # Admins.query.delete()
-        Product.query.delete()
         ProductImage.query.delete()
         Order.query.delete()
         OrderProduct.query.delete()
-
+        Product.query.delete()
         db.session.commit()
