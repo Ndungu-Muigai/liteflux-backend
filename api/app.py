@@ -80,10 +80,10 @@ def get_products():
 def add_product():
     email = get_jwt_identity()
 
-    product_name=request.form("product_name")
-    product_description=request.form("product_description")
-    product_price=float(request.form("product_price"))
-    product_quantity=int(request.form("product_quantity"))
+    product_name=request.form["product_name"]
+    product_description=request.form["product_description"]
+    product_price=float(request.form["product_price"])
+    product_quantity=int(request.form["product_quantity"])
 
     new_product = Product(stock_quantity=product_quantity, name=product_name, description=product_description, price=product_price)
     db.session.add(new_product)
