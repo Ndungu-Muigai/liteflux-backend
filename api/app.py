@@ -79,29 +79,49 @@ def get_products():
 @jwt_required()
 def add_product():
     email = get_jwt_identity()
-    try:
-        product_name = request.form["product_name"]
-        product_description = request.form["product_description"]
-        product_price = float(request.form["product_price"])
-        product_quantity = int(request.form["product_quantity"])
-        images = request.files.getlist("product_images")
 
-        new_product = Product(stock_quantity=product_quantity, name=product_name, description=product_description, price=product_price)
-        db.session.add(new_product)
-        db.session.commit()
+    product_name=request.form("product_name")
+    product_description=request.form("product_description")
+    product_price=float(request.form("product_price"))
+    product_quantity=int(request.form("product_quantity"))
 
-        for image in images:
-            image_blob = image.read()
-            product_image = ProductImage(product_id=new_product.id, image_blob=image_blob)
-            db.session.add(product_image)
+    new_product = Product(stock_quantity=product_quantity, name=product_name, description=product_description, price=product_price)
+    db.session.add(new_product)
+    db.session.commit()
 
-        db.session.commit()
+    images=request.files.getlist("product_images")
 
-        return jsonify({"success": "Product added successfully!"}), 201
+    for image in images:
+        image_blob=image.read()
+        product_image=ProductImage(image_blob=image_blob, product_id=new_product.id)
+        db.session.add(product_image)
 
-    except Exception as e:
-        app.logger.error(f"Error adding product: {e}")
-        return jsonify({"error": "An error occurred while adding the product"}), 500
+    db.session.commit()
+
+    return make_response(jsonify({"success": "Product added successfully!"}), 201)
+    # try:
+    #     product_name = request.form["product_name"]
+    #     product_description = request.form["product_description"]
+    #     product_price = float(request.form["product_price"])
+    #     product_quantity = int(request.form["product_quantity"])
+    #     images = request.files.getlist("product_images")
+
+    #     new_product = Product(stock_quantity=product_quantity, name=product_name, description=product_description, price=product_price)
+    #     db.session.add(new_product)
+    #     db.session.commit()
+
+    #     for image in images:
+    #         image_blob = image.read()
+    #         product_image = ProductImage(product_id=new_product.id, image_blob=image_blob)
+    #         db.session.add(product_image)
+
+    #     db.session.commit()
+
+    #     return jsonify({"success": "Product added successfully!"}), 201
+
+    # except Exception as e:
+    #     app.logger.error(f"Error adding product: {e}")
+    #     return jsonify({"error": "An error occurred while adding the product"}), 500
 
 @app.route('/admin/products/images/<int:image_id>', methods=['GET'])
 def get_image(image_id):
