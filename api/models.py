@@ -21,7 +21,7 @@ class ProductImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     image_blob = db.Column(db.LargeBinary, nullable=False)
-    image_name = db.Column(db.String, nullable=False)
+    # image_name = db.Column(db.String, nullable=False)
 
 class Order(db.Model):
     __tablename__ = 'orders'

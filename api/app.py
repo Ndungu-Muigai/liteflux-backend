@@ -93,7 +93,7 @@ def add_product():
 
     for image in images:
         image_blob=image.read()
-        product_image=ProductImage(image_blob=image_blob, product_id=new_product.id,image_name=secure_filename(image.filename))
+        product_image=ProductImage(image_blob=image_blob, product_id=new_product.id)
         db.session.add(product_image)
 
     db.session.commit()
