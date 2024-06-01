@@ -106,7 +106,7 @@ def add_product():
                 # s3_client.put_object(Bucket=bucket_name, Key=unique_image_name, Body=image, ContentType=image.content_type)
                 # s3_url = f"https://{bucket_name}.s3.amazonaws.com/{image_name}"
                 image.save(os.path.join(app.config["UPLOADS_FOLDER"],unique_image_name))
-                image_url=f"{app.config["UPLOADS_FOLDER"]}/{unique_image_name}"
+                image_url = f"{app.config['UPLOADS_FOLDER']}/{unique_image_name}"
                 product_image = ProductImage(image_url=image_url, product_id=new_product.id)
                 db.session.add(product_image)
             except Exception as e:
