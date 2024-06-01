@@ -11,10 +11,13 @@ from Admin_creation import send_admin_credentials
 from AutoGenerations.password import random_password
 import os
 from io import BytesIO
+import json
+import boto3
 
 app = Flask(__name__)
 # Initialize JWT
 jwt = JWTManager(app)
+
 
 # Importing the configurations
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "default_secret_key")
@@ -33,6 +36,7 @@ app.config["SENDER_EMAIL"] = "info@litefluxent.com"
 migrate = Migrate(app, db)
 db.init_app(app)
 CORS(app)
+
 
 @app.route("/")
 def index():
@@ -80,29 +84,38 @@ def get_products():
 def add_product():
     email = get_jwt_identity()
 
-    product_name=request.form["product_name"]
-    product_description=request.form["product_description"]
-    product_price=float(request.form["product_price"])
-    product_quantity=int(request.form["product_quantity"])
+    product_name = request.form["product_name"]
+    product_description = request.form["product_description"]
+    product_price = float(request.form["product_price"])
+    product_quantity = int(request.form["product_quantity"])
 
     new_product = Product(stock_quantity=product_quantity, name=product_name, description=product_description, price=product_price)
     db.session.add(new_product)
-    db.session.commit()
 
-    images=request.files.getlist("product_images")
+    images = request.files.getlist("product_images")
+
+    s3_client = boto3.client("s3")
+    bucket_name = "bucketeer-bb9701ef-126c-468c-9f27-36f71cf55c9b"
 
     for image in images:
-        image_name=secure_filename(image.filename)
-        unique_image_name=str(uuid.uuid1()) + "_" + image_name
-        image.save(os.path.join(app.config["UPLOAD_FOLDER"], image_name))
-        product_image=ProductImage(image_url=unique_image_name, product_id=new_product.id)
-        db.session.add(product_image)
+        if image:
+            try:
+                image_name = secure_filename(image.filename)
+                unique_image_name = str(uuid.uuid1()) + "_" + image_name
+                s3_client.put_object(Bucket=bucket_name, Key=unique_image_name, Body=image, ContentType=image.content_type)
+                s3_url = f"https://{bucket_name}.s3.amazonaws.com/{image_name}"
+                product_image = ProductImage(image_url=s3_url, product_id=new_product.id)
+                db.session.add(product_image)
+            except Exception as e:
+                db.session.rollback()  # Rollback the database transaction if an error occurs
+                return make_response(jsonify({"error": str(e)}), 500)
 
-
-    db.session.commit()
-
-    return make_response(jsonify({"success": "Product added successfully!"}), 201)
-    
+    try:
+        db.session.commit()  # Commit changes to the database after all images are uploaded successfully
+        return make_response(jsonify({"success": "Product added successfully!"}), 201)
+    except Exception as e:
+        db.session.rollback()  # Rollback the database transaction if an error occurs
+        return make_response(jsonify({"error": str(e)}), 500)
 
 @app.route('/admin/products/images/<int:image_id>', methods=['GET'])
 def get_image(image_id):
