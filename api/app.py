@@ -24,7 +24,7 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=30)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
-app.config["UPLOAD_FOLDER"] = './Uploads/Images'
+app.config["UPLOAD_FOLDER"] = './Uploads/Product_Images'
 
 # Email sender configuration
 app.config["SENDER_NAME"] = "Liteflux Enterprises"
@@ -92,37 +92,17 @@ def add_product():
     images=request.files.getlist("product_images")
 
     for image in images:
-        image_blob=image.read()
-        product_image=ProductImage(image_blob=image_blob, product_id=new_product.id)
+        image_name=secure_filename(image.filename)
+        unique_image_name=str(uuid.uuid1()) + "_" + image_name
+        image.save(os.path.join(app.config["UPLOAD_FOLDER"], image_name))
+        product_image=ProductImage(image_url=unique_image_name, product_id=new_product.id)
         db.session.add(product_image)
 
 
     db.session.commit()
 
     return make_response(jsonify({"success": "Product added successfully!"}), 201)
-    # try:
-    #     product_name = request.form["product_name"]
-    #     product_description = request.form["product_description"]
-    #     product_price = float(request.form["product_price"])
-    #     product_quantity = int(request.form["product_quantity"])
-    #     images = request.files.getlist("product_images")
-
-    #     new_product = Product(stock_quantity=product_quantity, name=product_name, description=product_description, price=product_price)
-    #     db.session.add(new_product)
-    #     db.session.commit()
-
-    #     for image in images:
-    #         image_blob = image.read()
-    #         product_image = ProductImage(product_id=new_product.id, image_blob=image_blob)
-    #         db.session.add(product_image)
-
-    #     db.session.commit()
-
-    #     return jsonify({"success": "Product added successfully!"}), 201
-
-    # except Exception as e:
-    #     app.logger.error(f"Error adding product: {e}")
-    #     return jsonify({"error": "An error occurred while adding the product"}), 500
+    
 
 @app.route('/admin/products/images/<int:image_id>', methods=['GET'])
 def get_image(image_id):
