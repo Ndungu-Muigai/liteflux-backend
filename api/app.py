@@ -11,7 +11,6 @@ from Admin_creation import send_admin_credentials
 from AutoGenerations.password import random_password
 import os
 from io import BytesIO
-# import boto3
 
 app = Flask(__name__)
 # Initialize JWT
@@ -83,6 +82,9 @@ def get_products():
 def add_product():
     email = get_jwt_identity()
 
+    if not email:
+        return(make_response(jsonify({"error":"Kindly login to continue"})),400)
+    
     product_name = request.form["product_name"]
     product_description = request.form["product_description"]
     product_price = float(request.form["product_price"])
@@ -95,16 +97,11 @@ def add_product():
     #Uploading the images
     images = request.files.getlist("product_images")
 
-    # s3_client = boto3.client("s3",aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'))
-    # bucket_name = "bucketeer-bb9701ef-126c-468c-9f27-36f71cf55c9b"
-
     for image in images:
         if image:
             try:
                 image_name = secure_filename(image.filename)
                 unique_image_name = str(uuid.uuid1()) + "_" + image_name
-                # s3_client.put_object(Bucket=bucket_name, Key=unique_image_name, Body=image, ContentType=image.content_type)
-                # s3_url = f"https://{bucket_name}.s3.amazonaws.com/{image_name}"
                 image.save(os.path.join(app.config["UPLOADS_FOLDER"],unique_image_name))
                 image_url = f"{app.config['UPLOADS_FOLDER']}/{unique_image_name}"
                 product_image = ProductImage(image_url=image_url, product_id=new_product.id)
