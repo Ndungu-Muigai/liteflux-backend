@@ -94,7 +94,7 @@ def add_product():
 
     images = request.files.getlist("product_images")
 
-    s3_client = boto3.client("s3")
+    s3_client = boto3.client("s3",aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'))
     bucket_name = "bucketeer-bb9701ef-126c-468c-9f27-36f71cf55c9b"
 
     for image in images:
