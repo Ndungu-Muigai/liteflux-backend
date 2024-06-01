@@ -91,7 +91,9 @@ def add_product():
 
     new_product = Product(stock_quantity=product_quantity, name=product_name, description=product_description, price=product_price)
     db.session.add(new_product)
+    db.session.commit()
 
+    #Uploading the images
     images = request.files.getlist("product_images")
 
     s3_client = boto3.client("s3",aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'))
