@@ -96,6 +96,7 @@ def add_product():
         product_image=ProductImage(image_blob=image_blob, product_id=new_product.id)
         db.session.add(product_image)
 
+
     db.session.commit()
 
     return make_response(jsonify({"success": "Product added successfully!"}), 201)
