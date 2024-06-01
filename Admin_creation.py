@@ -3,7 +3,7 @@ import os
 from api import app
 
 configuration=sib_api_v3_sdk.Configuration()
-configuration.api_key["api-key"] = os.environ["SENDINBLUE_API_KEY"]
+configuration.api_key["api-key"] = os.environ.get("SENDINBLUE_API_KEY")
 api_instance=sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
 
 def send_admin_credentials(first_name, last_name, email, password):

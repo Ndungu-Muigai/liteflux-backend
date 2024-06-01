@@ -5,9 +5,9 @@ if __name__ == "__main__":
     with app.app_context():
         print("Seed file")
 
-        # new_admin = Admins(first_name="Samuel", last_name="Muigai", email="muigaisam65@gmail.com", phone="+254707251073", password="abc1234")
-        # db.session.add(new_admin)
-        # db.session.commit()
+        new_admin = Admins(first_name="Samuel", last_name="Muigai", email="muigaisam65@gmail.com", phone="+254707251073", password="abc1234")
+        db.session.add(new_admin)
+        db.session.commit()
 
         # Uncomment the following lines to add more seed data as needed
         # product = Product.query.filter_by(id=1).first()
@@ -21,8 +21,8 @@ if __name__ == "__main__":
         # db.session.add(new_order_product)
 
         # Admins.query.delete()
-        ProductImage.query.delete()
-        Order.query.delete()
-        OrderProduct.query.delete()
-        Product.query.delete()
+        # ProductImage.query.delete()
+        # Order.query.delete()
+        # OrderProduct.query.delete()
+        # Product.query.delete()
         db.session.commit()
