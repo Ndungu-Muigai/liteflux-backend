@@ -11,8 +11,7 @@ from Admin_creation import send_admin_credentials
 from AutoGenerations.password import random_password
 import os
 from io import BytesIO
-import json
-import boto3
+# import boto3
 
 app = Flask(__name__)
 # Initialize JWT
@@ -27,7 +26,7 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=30)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgres://default:L2HzhlpSWwm9@ep-super-dawn-a4t58lz4.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require"
-app.config["UPLOAD_FOLDER"] = './Uploads/Product_Images'
+app.config["UPLOADS_FOLDER"] = './Uploads/Images'
 
 # Email sender configuration
 app.config["SENDER_NAME"] = "Liteflux Enterprises"
@@ -96,17 +95,19 @@ def add_product():
     #Uploading the images
     images = request.files.getlist("product_images")
 
-    s3_client = boto3.client("s3",aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'))
-    bucket_name = "bucketeer-bb9701ef-126c-468c-9f27-36f71cf55c9b"
+    # s3_client = boto3.client("s3",aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'))
+    # bucket_name = "bucketeer-bb9701ef-126c-468c-9f27-36f71cf55c9b"
 
     for image in images:
         if image:
             try:
                 image_name = secure_filename(image.filename)
                 unique_image_name = str(uuid.uuid1()) + "_" + image_name
-                s3_client.put_object(Bucket=bucket_name, Key=unique_image_name, Body=image, ContentType=image.content_type)
-                s3_url = f"https://{bucket_name}.s3.amazonaws.com/{image_name}"
-                product_image = ProductImage(image_url=s3_url, product_id=new_product.id)
+                # s3_client.put_object(Bucket=bucket_name, Key=unique_image_name, Body=image, ContentType=image.content_type)
+                # s3_url = f"https://{bucket_name}.s3.amazonaws.com/{image_name}"
+                image.save(os.path.join(app.config["UPLOADS_FOLDER"],unique_image_name))
+                image_url=f"{app.config["UPLOADS_FOLDER"]}/{unique_image_name}"
+                product_image = ProductImage(image_url=image_url, product_id=new_product.id)
                 db.session.add(product_image)
             except Exception as e:
                 db.session.rollback()  # Rollback the database transaction if an error occurs
