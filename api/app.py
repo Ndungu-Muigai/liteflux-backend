@@ -122,7 +122,7 @@ def add_product():
 
 @app.route('/images/<filename>')
 def get_image(filename):
-    return send_from_directory('/tmp', filename)
+    return send_from_directory('/tmp', filename, as_attachment=True)
 
 @app.route("/admin/products/<int:product_id>", methods=["GET", "POST"])
 @jwt_required()
