@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, session, make_response, send_file
+from flask import Flask, jsonify, request, send_from_directory, make_response, send_file
 from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -106,7 +106,8 @@ def add_product():
                 image_path = os.path.join(upload_folder, unique_image_name)
                 image.save(image_path)
 
-                product_image = ProductImage(image_name=unique_image_name, product_id=new_product.id)
+                image_url = f"/images/{unique_image_name}"
+                product_image = ProductImage(image_name=unique_image_name, image_url=image_url, product_id=new_product.id)
                 db.session.add(product_image)
             except Exception as e:
                 db.session.rollback()  # Rollback the database transaction if an error occurs
@@ -118,6 +119,10 @@ def add_product():
     except Exception as e:
         db.session.rollback()  # Rollback the database transaction if an error occurs
         return make_response(jsonify({"error": str(e)}), 500)
+
+@app.route('/images/<filename>')
+def get_image(filename):
+    return send_from_directory('/tmp', filename)
 
 @app.route('/admin/products/images/<int:image_id>', methods=['GET'])
 def get_image(image_id):

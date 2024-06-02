@@ -10,13 +10,7 @@ class AdminSchema(Schema):
 class ImageSchema(Schema):
     id = fields.Int(required=True)
     image_name = fields.Str(required=True)
-    # image_blob = fields.Method("get_image_blob", deserialize="load_image_blob")
-
-    # def get_image_blob(self, obj):
-    #     return obj.image_blob.decode('latin-1')
-
-    # def load_image_blob(self, value):
-    #     return value.encode('latin-1')
+    image_url=fields.Str(required=True)
 
 class ProductSchema(Schema):
     id = fields.Int(required=True)

@@ -21,6 +21,7 @@ class ProductImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     image_name = db.Column(db.String(250), nullable=False)
+    image_url = db.Column(db.String(250), nullable=False)
 
 class Order(db.Model):
     __tablename__ = 'orders'
