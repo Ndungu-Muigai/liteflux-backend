@@ -120,9 +120,9 @@ def add_product():
         db.session.rollback()  # Rollback the database transaction if an error occurs
         return make_response(jsonify({"error": str(e)}), 500)
 
-@app.route('/images/<filename>')
-def get_image(filename):
-    return send_from_directory('/tmp', filename)
+# @app.route('/images/<filename>')
+# def get_image(filename):
+#     return send_from_directory('/tmp', filename)
 
 @app.route('/admin/products/images/<int:image_id>', methods=['GET'])
 def get_image(image_id):
