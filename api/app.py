@@ -90,16 +90,23 @@ def add_product():
     product_price = float(request.form["product_price"])
     product_quantity = int(request.form["product_quantity"])
 
-    new_product = Product(stock_quantity=product_quantity, name=product_name, description=product_description, price=product_price)
-    db.session.add(new_product)
-    db.session.commit()
+    products=Product.query.all()
 
-    # Uploading the images
-    images = request.files.getlist("product_images")
-    upload_folder = '/tmp'
+    for product in products:
+        if product.product_name == product_name:
+            return jsonify({"error": "Product already exists"}), 400
+        
+    try:
 
-    for image in images:
-        if image:
+        new_product = Product(stock_quantity=product_quantity, name=product_name, description=product_description, price=product_price)
+        db.session.add(new_product)
+        db.session.commit()
+
+        # Uploading the images
+        images = request.files.getlist("product_images")
+        upload_folder = '/tmp'
+
+        for image in images:
             try:
                 image_name = secure_filename(image.filename)
                 unique_image_name = str(uuid.uuid1()) + "_" + image_name
@@ -109,16 +116,17 @@ def add_product():
                 image_url = f"https://api.litefluxent.com/images/{unique_image_name}"
                 product_image = ProductImage(image_name=unique_image_name, image_url=image_url, product_id=new_product.id)
                 db.session.add(product_image)
+
             except Exception as e:
                 db.session.rollback()  # Rollback the database transaction if an error occurs
                 return make_response(jsonify({"error": str(e)}), 500)
 
-    try:
-        db.session.commit()  # Commit changes to the database after all images are uploaded successfully
-        return make_response(jsonify({"success": "Product added successfully!"}), 201)
+            db.session.commit()  # Commit changes to the database after all images are uploaded successfully
+            return make_response(jsonify({"success": "Product added successfully!"}), 201)
+        
     except Exception as e:
         db.session.rollback()  # Rollback the database transaction if an error occurs
-        return make_response(jsonify({"error": str(e)}), 500)
+        return make_response(jsonify({"error": "Error creating new product. Please try again later"}), 500)
 
 @app.route('/images/<filename>')
 def get_image(filename):
