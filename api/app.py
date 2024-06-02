@@ -96,16 +96,14 @@ def add_product():
 
     # Uploading the images
     images = request.files.getlist("product_images")
-    
-    if not os.path.exists(app.config['UPLOAD_FOLDER']):
-        os.makedirs(app.config['UPLOAD_FOLDER'])
-    
+    upload_folder = '/tmp'
+
     for image in images:
         if image:
             try:
                 image_name = secure_filename(image.filename)
                 unique_image_name = str(uuid.uuid1()) + "_" + image_name
-                image_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_image_name)
+                image_path = os.path.join(upload_folder, unique_image_name)
                 image.save(image_path)
 
                 product_image = ProductImage(image_name=unique_image_name, product_id=new_product.id)
