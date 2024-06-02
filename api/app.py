@@ -106,7 +106,7 @@ def add_product():
                 image_path = os.path.join(upload_folder, unique_image_name)
                 image.save(image_path)
 
-                image_url = f"/images/{unique_image_name}"
+                image_url = f"https://api.litefluxent.com/images/{unique_image_name}"
                 product_image = ProductImage(image_name=unique_image_name, image_url=image_url, product_id=new_product.id)
                 db.session.add(product_image)
             except Exception as e:
