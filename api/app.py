@@ -25,7 +25,7 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=30)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgres://default:L2HzhlpSWwm9@ep-super-dawn-a4t58lz4.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require"
-app.config["UPLOADS_FOLDER"] = './Uploads/Images'
+app.config["UPLOAD_FOLDER"] = 'static/Images'
 
 # Email sender configuration
 app.config["SENDER_NAME"] = "Liteflux Enterprises"
@@ -102,9 +102,9 @@ def add_product():
             try:
                 image_name = secure_filename(image.filename)
                 unique_image_name = str(uuid.uuid1()) + "_" + image_name
-                image.save(os.path.join(app.config["UPLOADS_FOLDER"],unique_image_name))
-                image_url = f"{app.config['UPLOADS_FOLDER']}/{unique_image_name}"
-                product_image = ProductImage(image_url=image_url, product_id=new_product.id)
+                image.save(os.path.join(os.path.abspath(os.path.dirname(__file__)),app.config["UPLOAD_FOLDER"],secure_filename(image_name)))
+                # image_url = f"{app.config['UPLOAD_FOLDER']}/{unique_image_name}"
+                product_image = ProductImage(image_name=unique_image_name, product_id=new_product.id)
                 db.session.add(product_image)
             except Exception as e:
                 db.session.rollback()  # Rollback the database transaction if an error occurs
