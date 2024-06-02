@@ -83,7 +83,7 @@ def add_product():
     email = get_jwt_identity()
 
     if not email:
-        return(make_response(jsonify({"error":"Kindly login to continue"})),400)
+        return make_response(jsonify({"error": "Kindly login to continue"}), 400)
     
     product_name = request.form["product_name"]
     product_description = request.form["product_description"]
@@ -94,16 +94,20 @@ def add_product():
     db.session.add(new_product)
     db.session.commit()
 
-    #Uploading the images
+    # Uploading the images
     images = request.files.getlist("product_images")
-
+    
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.makedirs(app.config['UPLOAD_FOLDER'])
+    
     for image in images:
         if image:
             try:
                 image_name = secure_filename(image.filename)
                 unique_image_name = str(uuid.uuid1()) + "_" + image_name
-                image.save(os.path.join(os.path.abspath(os.path.dirname(__file__)),app.config["UPLOAD_FOLDER"],secure_filename(image_name)))
-                # image_url = f"{app.config['UPLOAD_FOLDER']}/{unique_image_name}"
+                image_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_image_name)
+                image.save(image_path)
+
                 product_image = ProductImage(image_name=unique_image_name, product_id=new_product.id)
                 db.session.add(product_image)
             except Exception as e:
