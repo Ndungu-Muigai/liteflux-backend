@@ -28,7 +28,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "postgres://default:L2HzhlpSWwm9@ep-supe
 # Email sender configuration
 app.config["SENDER_NAME"] = "Liteflux Enterprises"
 app.config["SENDER_EMAIL"] = "info@litefluxent.com"
-app.config['UPLOAD_FOLDER']="https://liteflux-product-images.nyc3.digitaloceanspaces.com/Images"
 migrate = Migrate(app, db)
 db.init_app(app)
 CORS(app)
@@ -101,7 +100,7 @@ def add_product():
             image_name = secure_filename(image.filename)
             unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-            image.save(app.config["UPLOAD_FOLDER"])
+            image.save("https://liteflux-product-images.nyc3.digitaloceanspaces.com/Images",unique_image_name)
 
             image_url = f"https://liteflux-product-images.nyc3.digitaloceanspaces.com/{unique_image_name}"
             image_urls.append({"image_name": unique_image_name, "image_url": image_url})
