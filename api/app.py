@@ -35,8 +35,8 @@ CORS(app)
 
 # Define DigitalOcean S3 bucket settings
 S3_BUCKET_NAME = "liteflux-product-images"
-S3_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
-S3_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+S3_ACCESS_KEY = "DO00N74EXLW8PYFQWK94"
+S3_SECRET_KEY = "DO00RA6YZRADMWYPAVRB"
 S3_REGION_NAME = "nyc3"
 S3_BASE_URL = f"https://{S3_BUCKET_NAME}.{S3_REGION_NAME}.digitaloceanspaces.com/"
 s3_client = boto3.client(
