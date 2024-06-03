@@ -115,7 +115,7 @@ def add_product():
             image_name = secure_filename(image.filename)
             unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-            with open(image,"rb") as file:
+            with open(image.filename,"rb") as file:
                 s3_client.upload_fileobj(file, S3_BUCKET_NAME, unique_image_name,ExtraArgs={'ACL': 'public-read'})
             # s3_client.upload_file(image,S3_BUCKET_NAME,unique_image_name)
 
