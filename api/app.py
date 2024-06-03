@@ -1,6 +1,4 @@
 import boto3
-import requests
-from botocore.exceptions import NoCredentialsError
 from flask import Flask, jsonify, request, make_response
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -35,17 +33,19 @@ db.init_app(app)
 CORS(app)
 
 # Define DigitalOcean S3 bucket settings
-S3_BUCKET_NAME = "liteflux-product-images"
+AWS_ACCESS_KEY_ID =os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY =os.getenv("AWS_SECRET_ACCESS_KEY")
 S3_REGION_NAME = "nyc3"
+S3_BUCKET_NAME = "liteflux-product-images"
+
 S3_BASE_URL = f"https://{S3_BUCKET_NAME}.{S3_REGION_NAME}.digitaloceanspaces.com/"
 
-session = boto3.session.Session()
-s3_client = session.client(
+s3_client = boto3.client(
     "s3",
-    region_name="nyc3",
-    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-    endpoint_url='https://nyc3.digitaloceanspaces.com',
+    region_name=S3_REGION_NAME,
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    # endpoint_url='https://nyc3.digitaloceanspaces.com',
 )
 
 @app.route("/")
@@ -115,27 +115,9 @@ def add_product():
             image_name = secure_filename(image.filename)
             unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-            # Read the image data
-            image_data = image.read()
-
-            # Define additional headers
-            headers = {
-                "Content-Length": str(len(image_data)),
-                "x-amz-meta-my-key": "jadbcvkbcksbcksnksan",  # Example metadata
-                # Add more headers as needed
-            }
-
-            # Define your DigitalOcean Spaces endpoint
-            endpoint = f"https://{S3_BUCKET_NAME}.{S3_REGION_NAME}.digitaloceanspaces.com/{unique_image_name}"
-
-            # Make the PUT request to upload the image
-            response = requests.put(endpoint, data=image_data, headers=headers, auth=(os.getenv("AWS_ACCESS_KEY_ID"), os.getenv("AWS_SECRET_ACCESS_KEY")))
-
-            if response.status_code == 200:
-                image_url = f"{S3_BASE_URL}{unique_image_name}"
-                image_urls.append({"image_name": unique_image_name, "image_url": image_url})
-            else:
-                return jsonify({"error": f"Failed to upload image '{image_name}'. Status code: {response.status_code}, Error: {response.text}"}), response.status_code
+            s3_client.put_object(Body=image, Bucket=S3_BUCKET_NAME, Key=unique_image_name)
+            image_url = f"{S3_BASE_URL}{unique_image_name}"
+            image_urls.append({"image_name": unique_image_name, "image_url": image_url})
 
         # If all images are uploaded successfully, add the product to the database
         new_product = Product(
