@@ -40,7 +40,7 @@ S3_BUCKET_NAME = "liteflux-product-images"
 
 S3_BASE_URL = f"https://{S3_BUCKET_NAME}.{S3_REGION_NAME}.digitaloceanspaces.com/"
 
-s3_resource = boto3.resource(
+s3_client = boto3.client(
     "s3",
     region_name=S3_REGION_NAME,
     aws_access_key_id=AWS_ACCESS_KEY_ID,
@@ -115,7 +115,9 @@ def add_product():
             image_name = secure_filename(image.filename)
             unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-            s3_resource.Bucket(S3_BUCKET_NAME).put_object(Key=unique_image_name, Body=image)
+            with open(image,"rb") as file:
+                s3_client.upload_fileobj(file, S3_BUCKET_NAME, unique_image_name,ExtraArgs={'ACL': 'public-read'})
+            # s3_client.upload_file(image,S3_BUCKET_NAME,unique_image_name)
 
         # If all images are uploaded successfully, add the product to the database
         new_product = Product(
