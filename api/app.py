@@ -1,5 +1,5 @@
 from boto3 import session
-from flask import Flask, jsonify, request, make_response, send_from_directory
+from flask import Flask, jsonify, request, make_response
 from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -132,33 +132,36 @@ def add_product():
     except Exception as e:
         # Handle the exception
         print(f"Error uploading file to S3: {e}")
-        return make_response(jsonify({"error": "Error uploading images. Try again later"}), 500)
+        return make_response(jsonify({"error": "Error uploading images to S3. Try again later."}), 500)
 
     # If all images are uploaded successfully, add the product to the database
-    new_product = Product(
-        stock_quantity=product_quantity, 
-        name=product_name, 
-        description=product_description, 
-        price=product_price
-    )
-    db.session.add(new_product)
-    db.session.commit()
-
-    # Now add the images to the ProductImage table
-    for img in image_urls:
-        product_image = ProductImage(
-            image_name=img["image_name"], 
-            image_url=img["image_url"], 
-            product_id=new_product.id
+    try:
+        new_product = Product(
+            stock_quantity=product_quantity, 
+            name=product_name, 
+            description=product_description, 
+            price=product_price
         )
-        db.session.add(product_image)
+        db.session.add(new_product)
+        db.session.commit()
 
-    db.session.commit()  # Commit changes to the database after all images are uploaded successfully
-    return make_response(jsonify({"success": "Product added successfully!"}), 201)
+        # Now add the images to the ProductImage table
+        for img in image_urls:
+            product_image = ProductImage(
+                image_name=img["image_name"], 
+                image_url=img["image_url"], 
+                product_id=new_product.id
+            )
+            db.session.add(product_image)
 
-@app.route('/images/<filename>')
-def get_image(filename):
-    return send_from_directory('/tmp', filename, as_attachment=True)
+        db.session.commit()  # Commit changes to the database after all images are uploaded successfully
+        return make_response(jsonify({"success": "Product added successfully!"}), 201)
+    except Exception as e:
+        # Rollback the database transaction if an error occurs
+        db.session.rollback()
+        print(f"Error adding product to the database: {e}")
+        return make_response(jsonify({"error": "Error adding product to the database. Try again later."}), 500)
+
 
 @app.route("/admin/products/<int:product_id>", methods=["GET", "POST"])
 @jwt_required()
