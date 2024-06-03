@@ -116,25 +116,7 @@ def add_product():
             unique_image_name = str(uuid.uuid1()) + "_" + secure_filename(image.filename)
 
             # Upload file data to S3 bucket
-            # s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=unique_image_name, ACL='public-read', Body=image_bytes)
-
-            # Convert byte stream to a string
-            image_string = image_bytes.decode("utf-8")
-
-            # Save string to a temporary file
-            with open("temp_file", "w") as f:
-                f.write(image_string)
-
-            # Upload temporary file to S3 bucket
-            s3_client.upload_file("temp_file", S3_BUCKET_NAME, unique_image_name)
-
-            # Remove temporary file
-            os.remove("temp_file")
-
-            # Append image URL to the list
-            image_url = f"{S3_BASE_URL}{unique_image_name}"
-            image_urls.append({"image_name": unique_image_name, "image_url": image_url})
-
+            s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=unique_image_name, ACL='public-read', Body=image_bytes)
 
             # Append image URL to the list
             image_url = f"{S3_BASE_URL}{unique_image_name}"
