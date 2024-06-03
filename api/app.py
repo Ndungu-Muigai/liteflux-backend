@@ -101,7 +101,7 @@ def add_product():
 
     if not email:
         return make_response(jsonify({"error": "Kindly login to continue"}), 400)
-    
+
     product_name = request.form["product_name"]
     product_description = request.form["product_description"]
     product_price = float(request.form["product_price"])
@@ -114,37 +114,37 @@ def add_product():
     # List to store image URLs to be added to the product
     image_urls = []
 
-    #Getting the images from the form
-    images=request.files.getlist("product_images")
+    # Getting the images from the form
+    images = request.files.getlist("product_images")
 
-    #Declaring the upload folder
-    upload_folder="/Uploads"
+    # Declaring the upload folder
+    upload_folder = "/Uploads"
 
-    #Looping through the images and saving them to the tmp location
+    # Create the upload folder if it doesn't exist
+    if not os.path.exists(upload_folder):
+        os.makedirs(upload_folder)
+
+    # Looping through the images and saving them to the upload location
     for image in images:
-        image_name=secure_filename(image.filename)
-        unique_image_name=str(uuid.uuid1()) + "_" + image_name
+        image_name = secure_filename(image.filename)
+        unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-        #Uploading the image locally
-        image_path=os.path.join(upload_folder, unique_image_name)
+        # Uploading the image locally
+        image_path = os.path.join(upload_folder, unique_image_name)
         image.save(image_path)
 
-        #Getting the image name
-        image_name=os.path.basename(image_path)
-
-        #Uploading the image to the S3 bucket
+        # Uploading the image to the S3 bucket
         try:
-            s3_client.upload_file(image_path,S3_BUCKET_NAME,image_name)
-            image_urls.append({"image_name": image_name, "image_url": f"{S3_BASE_URL}{image_name}"})
+            s3_client.upload_file(image_path, S3_BUCKET_NAME, unique_image_name)
+            image_urls.append({"image_name": unique_image_name, "image_url": f"{S3_BASE_URL}{unique_image_name}"})
         except Exception as e:
-            return make_response(jsonify({"error": f"Error uploading image to Digital Ocean: {e}"}),404)
-    
-    
+            return make_response(jsonify({"error": f"Error uploading image to Digital Ocean: {e}"}), 404)
+
     try:
         new_product = Product(
-            stock_quantity=product_quantity, 
-            name=product_name, 
-            description=product_description, 
+            stock_quantity=product_quantity,
+            name=product_name,
+            description=product_description,
             price=product_price
         )
         db.session.add(new_product)
@@ -153,8 +153,8 @@ def add_product():
         # Now add the images to the ProductImage table
         for img in image_urls:
             product_image = ProductImage(
-                image_name=img["image_name"], 
-                image_url=img["image_url"], 
+                image_name=img["image_name"],
+                image_url=img["image_url"],
                 product_id=new_product.id
             )
             db.session.add(product_image)
