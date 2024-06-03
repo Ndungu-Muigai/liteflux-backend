@@ -117,23 +117,14 @@ def add_product():
     # Getting the images from the form
     images = request.files.getlist("product_images")
 
-    # Declaring the upload folder (using /tmp for writable space in cloud environments)
-    upload_folder = "/tmp"
-
     # Looping through the images and saving them to the upload location
     for image in images:
         image_name = secure_filename(image.filename)
         unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-        # Uploading the image locally
-        image_path = os.path.join(upload_folder, unique_image_name)
-        image.save(image_path)
-
         # Uploading the image to the S3 bucket
         try:
-            # with open(image,"rb") as data:
-            s3_client.Bucket(S3_BUCKET_NAME).put_object(Key=unique_image_name,Body=image_path)
-            # s3_client.upload_fileobj(image_path, S3_BUCKET_NAME, unique_image_name)
+            s3_client.Bucket(S3_BUCKET_NAME).put_object(Key=unique_image_name, Body=image)
             image_urls.append({"image_name": unique_image_name, "image_url": f"{S3_BASE_URL}{unique_image_name}"})
         except Exception as e:
             return make_response(jsonify({"error": f"Error uploading image to Digital Ocean: {e}"}), 404)
@@ -164,7 +155,7 @@ def add_product():
         db.session.rollback()
         print(f"Error adding product to the database: {e}")
         return make_response(jsonify({"error": "Error adding product to the database. Try again later."}), 500)
-
+    
 @app.route("/admin/products/<int:product_id>", methods=["GET", "POST"])
 @jwt_required()
 def product_by_id(product_id):
