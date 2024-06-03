@@ -12,8 +12,7 @@ from datetime import timedelta
 from Admin_creation import send_admin_credentials
 from AutoGenerations.password import random_password
 import os
-import logging
-from urllib.parse import urljoin
+import io
 
 app = Flask(__name__)
 # Initialize JWT
@@ -36,49 +35,21 @@ db.init_app(app)
 CORS(app)
 
 # Define DigitalOcean S3 bucket settings
-AWS_ACCESS_KEY_ID =os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY =os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 S3_REGION_NAME = "nyc3"
 S3_BUCKET_NAME = "liteflux-product-images"
-S3_ENDPOINT_URL='https://nyc3.digitaloceanspaces.com'
+S3_ENDPOINT_URL = 'https://nyc3.digitaloceanspaces.com'
 S3_BASE_URL = f"https://{S3_BUCKET_NAME}.{S3_REGION_NAME}.digitaloceanspaces.com/"
 
-# session=session.Session()
-
-# client=session.client( "s3",
-#     region_name=S3_REGION_NAME,
-#     aws_access_key_id=AWS_ACCESS_KEY_ID,
-#     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-#     endpoint_url='https://nyc3.digitaloceanspaces.com',
-# )
-
-session=boto3.session.Session()
-s3_client=session.resource("s3",region_name="nyc3",endpoint_url=S3_ENDPOINT_URL, aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-#Function to add images to S3
-def upload_file_to_s3(file_object, s3_bucket_name, s3_base_url):
-    try:
-        client = boto3.client('s3')
-        unique_image_name = str(uuid.uuid1()) + secure_filename(file_object.filename)
-        s3_key = unique_image_name
-
-        # Upload file data to S3 bucket
-        client.Bucket(s3_bucket_name).put_object(Key=s3_key, Body=file_object)
-
-        # Generate the image URL
-        image_url = urljoin(s3_base_url, s3_key)
-
-        logger.info(f"Image '{file_object.filename}' uploaded successfully: {image_url}")
-        return {"image_name": unique_image_name, "image_url": image_url}
-
-    except Exception as e:
-        logger.error(f"Error uploading file '{file_object.filename}': {e}")
-        return None
-    
+session = boto3.session.Session()
+s3_client = session.client(
+    "s3",
+    region_name=S3_REGION_NAME,
+    endpoint_url=S3_ENDPOINT_URL,
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+)
 
 @app.route("/")
 def index():
@@ -138,51 +109,51 @@ def add_product():
     if existing_product:
         return jsonify({"error": "Product already exists"}), 400
 
+    # List to store image URLs to be added to the product
     image_urls = []
-    try:
-        images = request.files.getlist("product_images")
-        upload_folder = '/tmp'
 
-        for image in images:
-            image_path = os.path.join(upload_folder, image.filename)
-            with open(image_path, "wb") as f:
-                f.write(image.read())
+    # Getting the images from the form
+    images = request.files.getlist("product_images")
 
-            image_url_data = upload_file_to_s3(image, S3_BUCKET_NAME, S3_BASE_URL)
+    # Looping through the images and saving them to the upload location
+    for image in images:
+        image_name = secure_filename(image.filename)
+        unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-            if image_url_data:
-                image_urls.append(image_url_data)
-
-    except Exception as e:
-        print(f"Error processing images: {e}")
-        return make_response(jsonify({"error": f"Error processing images: {e}"}), 500)
+        # Uploading the image to the S3 bucket
+        try:
+            s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=unique_image_name, Body=image)
+            image_urls.append({"image_name": unique_image_name, "image_url": f"{S3_BASE_URL}{unique_image_name}"})
+        except Exception as e:
+            return make_response(jsonify({"error": f"Error uploading image to Digital Ocean: {e}"}), 404)
 
     try:
         new_product = Product(
-            stock_quantity=product_quantity, 
-            name=product_name, 
-            description=product_description, 
+            stock_quantity=product_quantity,
+            name=product_name,
+            description=product_description,
             price=product_price
         )
         db.session.add(new_product)
         db.session.commit()
 
+        # Now add the images to the ProductImage table
         for img in image_urls:
             product_image = ProductImage(
-                image_name=img["image_name"], 
-                image_url=img["image_url"], 
+                image_name=img["image_name"],
+                image_url=img["image_url"],
                 product_id=new_product.id
             )
             db.session.add(product_image)
 
-        db.session.commit()
+        db.session.commit()  # Commit changes to the database after all images are uploaded successfully
         return make_response(jsonify({"success": "Product added successfully!"}), 201)
-
     except Exception as e:
+        # Rollback the database transaction if an error occurs
         db.session.rollback()
         print(f"Error adding product to the database: {e}")
         return make_response(jsonify({"error": "Error adding product to the database. Try again later."}), 500)
-    
+
 @app.route("/admin/products/<int:product_id>", methods=["GET", "POST"])
 @jwt_required()
 def product_by_id(product_id):
