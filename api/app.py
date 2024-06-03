@@ -109,6 +109,21 @@ def add_product():
     if existing_product:
         return jsonify({"error": "Product already exists"}), 400
 
+    # Create the new product and commit it to get the ID
+    try:
+        new_product = Product(
+            stock_quantity=product_quantity,
+            name=product_name,
+            description=product_description,
+            price=product_price
+        )
+        db.session.add(new_product)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error adding product to the database: {e}")
+        return make_response(jsonify({"error": "Error adding product to the database. Try again later."}), 500)
+
     # List to store image URLs to be added to the product
     image_urls = []
 
@@ -128,15 +143,6 @@ def add_product():
             return make_response(jsonify({"error": f"Error uploading image to Digital Ocean: {e}"}), 404)
 
     try:
-        new_product = Product(
-            stock_quantity=product_quantity,
-            name=product_name,
-            description=product_description,
-            price=product_price
-        )
-        db.session.add(new_product)
-        db.session.commit()
-
         # Now add the images to the ProductImage table
         for img in image_urls:
             product_image = ProductImage(
@@ -151,8 +157,8 @@ def add_product():
     except Exception as e:
         # Rollback the database transaction if an error occurs
         db.session.rollback()
-        print(f"Error adding product to the database: {e}")
-        return make_response(jsonify({"error": "Error adding product to the database. Try again later."}), 500)
+        print(f"Error adding images to the database: {e}")
+        return make_response(jsonify({"error": "Error adding images to the database. Try again later."}), 500)
 
 @app.route("/admin/products/<int:product_id>", methods=["GET", "POST"])
 @jwt_required()
