@@ -116,12 +116,9 @@ def add_product():
             unique_image_name = str(uuid.uuid1()) + "_" + secure_filename(image.filename)
 
             # Upload file data to S3 bucket
-            s3_client.upload_fileobj(
-                io.BytesIO(image_bytes),
-                S3_BUCKET_NAME,
-                unique_image_name,
-                ExtraArgs={'ACL': 'public-read'}
-            )
+            # s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=unique_image_name, ACL='public-read', Body=image_bytes)
+
+            s3_client.upload_file(image_bytes,S3_BUCKET_NAME,unique_image_name)
 
             # Append image URL to the list
             image_url = f"{S3_BASE_URL}{unique_image_name}"
