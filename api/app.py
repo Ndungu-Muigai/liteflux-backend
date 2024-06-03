@@ -132,32 +132,29 @@ def add_product():
     except Exception as e:
         # Handle the exception
         print(f"Error uploading file to S3: {e}")
-            
-        # If all images are uploaded successfully, add the product to the database
-        new_product = Product(
-            stock_quantity=product_quantity, 
-            name=product_name, 
-            description=product_description, 
-            price=product_price
+        return make_response(jsonify({"error": "Failed to upload images to S3"}), 500)
+
+    # If all images are uploaded successfully, add the product to the database
+    new_product = Product(
+        stock_quantity=product_quantity, 
+        name=product_name, 
+        description=product_description, 
+        price=product_price
+    )
+    db.session.add(new_product)
+    db.session.commit()
+
+    # Now add the images to the ProductImage table
+    for img in image_urls:
+        product_image = ProductImage(
+            image_name=img["image_name"], 
+            image_url=img["image_url"], 
+            product_id=new_product.id
         )
-        db.session.add(new_product)
-        db.session.commit()
+        db.session.add(product_image)
 
-        # Now add the images to the ProductImage table
-        for img in image_urls:
-            product_image = ProductImage(
-                image_name=img["image_name"], 
-                image_url=img["image_url"], 
-                product_id=new_product.id
-            )
-            db.session.add(product_image)
-
-        db.session.commit()  # Commit changes to the database after all images are uploaded successfully
-        return make_response(jsonify({"success": "Product added successfully!"}), 201)
-
-    except Exception as e:
-        db.session.rollback()  # Rollback the database transaction if an error occurs
-        return make_response(jsonify({"error": str(e)}), 500)
+    db.session.commit()  # Commit changes to the database after all images are uploaded successfully
+    return make_response(jsonify({"success": "Product added successfully!"}), 201)
 
 @app.route("/admin/products/<int:product_id>", methods=["GET", "POST"])
 @jwt_required()
