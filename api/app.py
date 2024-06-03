@@ -129,18 +129,18 @@ def add_product():
         image_path=os.path.join(upload_folder, unique_image_name)
         image.save(image_path)
 
-
         #Getting the image name
         image_name=os.path.basename(image_path)
 
         #Uploading the image to the S3 bucket
         try:
             s3_client.upload_file(image_path,S3_BUCKET_NAME,image_name)
-            
+            image_urls.append({"image_name": image_name, "image_url": f"{S3_BASE_URL}{image_name}"})
         except Exception as e:
             return make_response(jsonify({"error": f"Error uploading image to Digital Ocean: {e}"}),404)
     
-    return make_response(jsonify({"success": "Images transferred to S3 successfully!"}),200)
+    
+    
         # return make_response(jsonify({"success": "Image saved successfully!", "path": f"{image_path}"}))
     
     # try:
