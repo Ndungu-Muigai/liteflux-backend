@@ -1,4 +1,5 @@
-from flask import Flask, jsonify, request, send_from_directory, make_response, send_file
+import boto3
+from flask import Flask, jsonify, request, make_response
 from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -10,12 +11,10 @@ from datetime import timedelta
 from Admin_creation import send_admin_credentials
 from AutoGenerations.password import random_password
 import os
-from io import BytesIO
 
 app = Flask(__name__)
 # Initialize JWT
 jwt = JWTManager(app)
-
 
 # Importing the configurations
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "default_secret_key")
@@ -25,7 +24,6 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=30)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgres://default:L2HzhlpSWwm9@ep-super-dawn-a4t58lz4.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require"
-app.config["UPLOAD_FOLDER"] = 'static/Images'
 
 # Email sender configuration
 app.config["SENDER_NAME"] = "Liteflux Enterprises"
@@ -35,6 +33,14 @@ migrate = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 
+session = boto3.session.Session()
+client = session.client(
+    "s3",
+    endpoint_url="https://nyc3.digitaloceanspaces.com",
+    region_name="nyc3",
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
+)
 
 @app.route("/")
 def index():
@@ -90,30 +96,34 @@ def add_product():
     product_price = float(request.form["product_price"])
     product_quantity = int(request.form["product_quantity"])
 
-    products=Product.query.all()
+    products = Product.query.all()
 
     for product in products:
-        if product.product_name == product_name:
+        if product.name == product_name:
             return jsonify({"error": "Product already exists"}), 400
         
     try:
-
         new_product = Product(stock_quantity=product_quantity, name=product_name, description=product_description, price=product_price)
         db.session.add(new_product)
         db.session.commit()
 
         # Uploading the images
         images = request.files.getlist("product_images")
-        upload_folder = '/tmp'
 
         for image in images:
             try:
                 image_name = secure_filename(image.filename)
                 unique_image_name = str(uuid.uuid1()) + "_" + image_name
-                image_path = os.path.join(upload_folder, unique_image_name)
-                image.save(image_path)
 
-                image_url = f"https://api.litefluxent.com/images/{unique_image_name}"
+                # Upload the image to DigitalOcean Spaces
+                client.put_object(
+                    Bucket="liteflux-product-images",
+                    Key=unique_image_name,
+                    Body=image,
+                    ACL="public-read"  # Optional: set the ACL to public-read
+                )
+
+                image_url = f"https://liteflux-product-images.nyc3.digitaloceanspaces.com/{unique_image_name}"
                 product_image = ProductImage(image_name=unique_image_name, image_url=image_url, product_id=new_product.id)
                 db.session.add(product_image)
 
@@ -121,16 +131,16 @@ def add_product():
                 db.session.rollback()  # Rollback the database transaction if an error occurs
                 return make_response(jsonify({"error": str(e)}), 500)
 
-            db.session.commit()  # Commit changes to the database after all images are uploaded successfully
-            return make_response(jsonify({"success": "Product added successfully!"}), 201)
+        db.session.commit()  # Commit changes to the database after all images are uploaded successfully
+        return make_response(jsonify({"success": "Product added successfully!"}), 201)
         
     except Exception as e:
         db.session.rollback()  # Rollback the database transaction if an error occurs
         return make_response(jsonify({"error": "Error creating new product. Please try again later"}), 500)
 
-@app.route('/images/<filename>')
-def get_image(filename):
-    return send_from_directory('/tmp', filename, as_attachment=True)
+# @app.route('/images/<filename>')
+# def get_image(filename):
+#     return send_from_directory('/tmp', filename, as_attachment=True)
 
 @app.route("/admin/products/<int:product_id>", methods=["GET", "POST"])
 @jwt_required()
