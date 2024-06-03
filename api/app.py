@@ -140,16 +140,18 @@ def add_product():
             return make_response(jsonify({"error": f"Error uploading image to Digital Ocean: {e}"}),404)
     
     
-    new_product = Product(
+    try:
+        new_product = Product(
             stock_quantity=product_quantity, 
             name=product_name, 
             description=product_description, 
             price=product_price
         )
-    db.session.add(new_product)
-    db.session.commit()
+        db.session.add(new_product)
+        db.session.commit()
 
-    for img in image_urls:
+        # Now add the images to the ProductImage table
+        for img in image_urls:
             product_image = ProductImage(
                 image_name=img["image_name"], 
                 image_url=img["image_url"], 
@@ -157,8 +159,13 @@ def add_product():
             )
             db.session.add(product_image)
 
-    db.session.commit()  # Commit changes to the database after all images are uploaded successfully
-    return make_response(jsonify({"success": "Product added successfully!"}), 201)
+        db.session.commit()  # Commit changes to the database after all images are uploaded successfully
+        return make_response(jsonify({"success": "Product added successfully!"}), 201)
+    except Exception as e:
+        # Rollback the database transaction if an error occurs
+        db.session.rollback()
+        print(f"Error adding product to the database: {e}")
+        return make_response(jsonify({"error": "Error adding product to the database. Try again later."}), 500)
         # return make_response(jsonify({"success": "Image saved successfully!", "path": f"{image_path}"}))
     
     # try:
