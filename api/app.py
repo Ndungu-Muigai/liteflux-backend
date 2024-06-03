@@ -115,8 +115,8 @@ def add_product():
             image_name = secure_filename(image.filename)
             unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-            s3_resource.Bucket(S3_BUCKET_NAME).put_object(Key=unique_image_name, Body=image)
-            
+            s3_resource.Bucket(S3_BUCKET_NAME).put_object(Key=image.filename, Body=image)
+
         # If all images are uploaded successfully, add the product to the database
         new_product = Product(
             stock_quantity=product_quantity, 
