@@ -139,6 +139,8 @@ def add_product():
             return make_response(jsonify({"success": "Images transferred to S3 successfully!"}),200)
         except Exception as e:
             return make_response(jsonify({"error": f"Error uploading image to Digital Ocean: {e}"}),404)
+    
+    return make_response(jsonify({"success": "Images transferred to S3 successfully!"}),200)
         # return make_response(jsonify({"success": "Image saved successfully!", "path": f"{image_path}"}))
     
     # try:
