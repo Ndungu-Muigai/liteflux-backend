@@ -1,4 +1,5 @@
 import boto3
+import botocore
 from botocore.exceptions import NoCredentialsError
 from flask import Flask, jsonify, request, make_response
 from flask_migrate import Migrate
@@ -35,16 +36,11 @@ CORS(app)
 
 # Define DigitalOcean S3 bucket settings
 S3_BUCKET_NAME = "liteflux-product-images"
-S3_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
-S3_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 S3_REGION_NAME = "nyc3"
 S3_BASE_URL = f"https://{S3_BUCKET_NAME}.{S3_REGION_NAME}.digitaloceanspaces.com/"
-s3_client = boto3.client(
-    "s3",
-    aws_access_key_id=S3_ACCESS_KEY,
-    aws_secret_access_key=S3_SECRET_KEY,
-    region_name=S3_REGION_NAME
-)
+
+session=boto3.session.Session()
+s3_client=session.client("s3",region_name=S3_REGION_NAME,aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),config=botocore.config.Config(s3_client={"addressing_client": "virtual"}))
 
 @app.route("/")
 def index():
@@ -115,7 +111,9 @@ def add_product():
 
             # Upload image to S3 bucket
             try:
-                s3_client.upload_fileobj(image, S3_BUCKET_NAME, unique_image_name)
+                s3_client.put_object(Bucket=S3_BUCKET_NAME,Key=image,Body=image.read(),ACL="public",Metadata={ # Defines metadata tags.
+                      'x-amz-meta-my-key': 'jadbcvkbcksbcksnksan'
+                  })
                 image_url = f"{S3_BASE_URL}{unique_image_name}"
                 image_urls.append({"image_name": unique_image_name, "image_url": image_url})
             except NoCredentialsError:
