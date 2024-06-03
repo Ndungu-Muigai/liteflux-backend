@@ -52,7 +52,7 @@ S3_BASE_URL = f"https://{S3_BUCKET_NAME}.{S3_REGION_NAME}.digitaloceanspaces.com
 # )
 
 session=boto3.session.Session()
-s3_client=session.client("s3",region_name="nyc3",endpoint_url=S3_ENDPOINT_URL, aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+s3_client=session.resource("s3",region_name="nyc3",endpoint_url=S3_ENDPOINT_URL, aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 @app.route("/")
 def index():
     return {"message": "Welcome to the API"}
