@@ -45,7 +45,7 @@ s3_client = session.client(
     region_name=S3_REGION_NAME,
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-    config=botocore.config.Config(signature_version='s3v4')
+    endpoint_url='https://nyc3.digitaloceanspaces.com',
 )
 
 @app.route("/")
