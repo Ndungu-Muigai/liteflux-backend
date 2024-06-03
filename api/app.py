@@ -39,8 +39,14 @@ S3_BUCKET_NAME = "liteflux-product-images"
 S3_REGION_NAME = "nyc3"
 S3_BASE_URL = f"https://{S3_BUCKET_NAME}.{S3_REGION_NAME}.digitaloceanspaces.com/"
 
-session=boto3.session.Session()
-s3_client=session.client("s3",region_name=S3_REGION_NAME,aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),config=botocore.config.Config(s3_client={"addressing_client": "virtual"}))
+session = boto3.session.Session()
+s3_client = session.client(
+    "s3",
+    region_name=S3_REGION_NAME,
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    config=botocore.config.Config(signature_version='s3v4')
+)
 
 @app.route("/")
 def index():
