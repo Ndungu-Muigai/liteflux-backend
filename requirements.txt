@@ -16,3 +16,4 @@ marshmallow
 psycopg2-binary
 sib_api_v3_sdk
 boto3
+requests
