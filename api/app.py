@@ -33,14 +33,7 @@ migrate = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 
-session = boto3.session.Session()
-client = session.client(
-    "s3",
-    endpoint_url="https://nyc3.digitaloceanspaces.com",
-    region_name="nyc3",
-    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
-)
+s3_client=boto3.client("s3")
 
 @app.route("/")
 def index():
@@ -117,14 +110,7 @@ def add_product():
                 raise ValueError("Image file is empty or could not be read")
 
             # Upload the image to DigitalOcean Spaces
-            response = client.put_object(
-                Bucket="liteflux-product-images",
-                Key=unique_image_name,
-                Body=image_bytes,
-                ACL="public-read"
-            )
-
-            print(f"Upload response: {response}")
+            s3_client.upload_file(unique_image_name, "liteflux-product-images",unique_image_name)
 
             image_url = f"https://liteflux-product-images.nyc3.digitaloceanspaces.com/{unique_image_name}"
             image_urls.append({"image_name": unique_image_name, "image_url": image_url})
