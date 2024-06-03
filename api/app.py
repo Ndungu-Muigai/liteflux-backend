@@ -109,12 +109,15 @@ def add_product():
             image_name = secure_filename(image.filename)
             unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
+            # Read the image file and convert it to a byte stream
+            image_bytes = image.read()
+
             # Upload the image to DigitalOcean Spaces
             client.put_object(
                 Bucket="liteflux-product-images",
                 Key=unique_image_name,
-                Body=image,
-                ACL="public-read"  # Optional: set the ACL to public-read
+                Body=image_bytes,
+                ACL="public-read"
             )
 
             image_url = f"https://liteflux-product-images.nyc3.digitaloceanspaces.com/{unique_image_name}"
