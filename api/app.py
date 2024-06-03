@@ -131,9 +131,8 @@ def add_product():
 
         # Uploading the image to the S3 bucket
         try:
-            with open(image,"rb") as data:
-                s3_client.Bucket(S3_BUCKET_NAME).put_object(Key=image_path,Body=data)
-                # s3_client.upload_fileobj(image_path, S3_BUCKET_NAME, unique_image_name)
+            with open(image_path, "rb") as data:
+                s3_client.upload_fileobj(data, S3_BUCKET_NAME, unique_image_name)
                 image_urls.append({"image_name": unique_image_name, "image_url": f"{S3_BASE_URL}{unique_image_name}"})
         except Exception as e:
             return make_response(jsonify({"error": f"Error uploading image to Digital Ocean: {e}"}), 404)
@@ -164,6 +163,7 @@ def add_product():
         db.session.rollback()
         print(f"Error adding product to the database: {e}")
         return make_response(jsonify({"error": "Error adding product to the database. Try again later."}), 500)
+
 
 @app.route("/admin/products/<int:product_id>", methods=["GET", "POST"])
 @jwt_required()
