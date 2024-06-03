@@ -11,6 +11,7 @@ from datetime import timedelta
 from Admin_creation import send_admin_credentials
 from AutoGenerations.password import random_password
 import os
+import io
 
 app = Flask(__name__)
 # Initialize JWT
@@ -110,13 +111,17 @@ def add_product():
     image_urls = []
     try:
         images = request.files.getlist("product_images")
-
         for image in images:
-            image_name = secure_filename(image.filename)
-            unique_image_name = str(uuid.uuid1()) + "_" + image_name
+            image_bytes = image.read()  # Read file data as bytes
+            unique_image_name = str(uuid.uuid1()) + "_" + secure_filename(image.filename)
 
-            with open(image.filename,"rb") as file:
-                s3_client.upload_fileobj(file, S3_BUCKET_NAME, unique_image_name,ExtraArgs={'ACL': 'public-read'})
+            # Upload file data to S3 bucket
+            s3_client.upload_fileobj(
+                io.BytesIO(image_bytes),  # Convert bytes to file-like object
+                S3_BUCKET_NAME,
+                unique_image_name,
+                ExtraArgs={'ACL': 'public-read'}
+    )
             # s3_client.upload_file(image,S3_BUCKET_NAME,unique_image_name)
 
         # If all images are uploaded successfully, add the product to the database
