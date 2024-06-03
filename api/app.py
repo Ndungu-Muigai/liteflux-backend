@@ -136,7 +136,7 @@ def add_product():
         #Uploading the image to the S3 bucket
         try:
             s3_client.upload_file(image_path,S3_BUCKET_NAME,image_name)
-            return make_response(jsonify({"success": "Images transferred to S3 successfully!"}),200)
+            
         except Exception as e:
             return make_response(jsonify({"error": f"Error uploading image to Digital Ocean: {e}"}),404)
     
