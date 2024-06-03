@@ -1,5 +1,5 @@
 from boto3 import session
-from flask import Flask, jsonify, request, make_response
+from flask import Flask, jsonify, request, make_response, send_from_directory
 from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -155,6 +155,10 @@ def add_product():
 
     db.session.commit()  # Commit changes to the database after all images are uploaded successfully
     return make_response(jsonify({"success": "Product added successfully!"}), 201)
+
+@app.route('/images/<filename>')
+def get_image(filename):
+    return send_from_directory('/tmp', filename, as_attachment=True)
 
 @app.route("/admin/products/<int:product_id>", methods=["GET", "POST"])
 @jwt_required()
