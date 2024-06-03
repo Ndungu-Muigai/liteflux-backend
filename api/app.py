@@ -1,4 +1,5 @@
 from boto3 import session
+from botocore.exceptions import ClientError
 from flask import Flask, jsonify, request, make_response
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -130,8 +131,14 @@ def add_product():
             image_url = f"{S3_BASE_URL}{unique_image_name}"
             image_urls.append({"image_name": unique_image_name, "image_url": image_url})
 
+    except ClientError as e:
+        # Handle specific errors returned by the S3 operation
+        error_message = e.response['Error']['Message']
+        print(f"Error uploading file to S3: {error_message}")
+        return make_response(jsonify({"error": f"Error uploading file to S3: {error_message}"}), 500)
+
     except Exception as e:
-        # Handle the exception
+        # Handle other exceptions
         print(f"Error uploading file to S3: {e}")
         return make_response(jsonify({"error": f"Error uploading file to S3: {e}"}), 500)
 
