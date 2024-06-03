@@ -111,64 +111,81 @@ def add_product():
 
     # List to store image URLs to be added to the product
     image_urls = []
-    try:
-        images = request.files.getlist("product_images")
-        upload_folder = '/tmp'
 
-        for image in images:
-            image_name = secure_filename(image.filename)
-            unique_image_name = str(uuid.uuid1()) + "_" + image_name
+    #Getting the images from the form
+    images=request.files.getlist("product_images")
 
-            # Upload image locally first
-            image_path = os.path.join(upload_folder, unique_image_name)
-            image.save(image_path)
+    #Declaring the upload folder
+    upload_folder="/tmp"
 
-            # Upload file data to S3 bucket
-            with open(image_path, "rb") as f:
-                client.upload_fileobj(f, S3_BUCKET_NAME, unique_image_name)
+    #Looping through the images and saving them to the tmp location
+    for image in images:
+        image_name=secure_filename(image.filename)
+        unique_image_name=str(uuid.uuid1()) + "_" + image_name
 
-            # Append image URL to the list
-            image_url = f"{S3_BASE_URL}{unique_image_name}"
-            image_urls.append({"image_name": unique_image_name, "image_url": image_url})
+        #Uploading the image locally
+        image_path=os.path.join(upload_folder, unique_image_name)
+        image.save(image_path)
+        return make_response(jsonify({"success": "Image saved successfully!", "path": f"{image_path}"}))
+    
+    # try:
+    #     images = request.files.getlist("product_images")
+    #     upload_folder = '/tmp'
 
-    except ClientError as e:
-        # Handle specific errors returned by the S3 operation
-        error_message = e.response['Error']['Message']
-        print(f"Error uploading file to S3: {error_message}")
-        return make_response(jsonify({"error": f"Error uploading file to S3: {error_message}"}), 500)
+    #     for image in images:
+    #         image_name = secure_filename(image.filename)
+    #         unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-    except Exception as e:
-        # Handle other exceptions
-        print(f"Error uploading file to S3: {e}")
-        return make_response(jsonify({"error": f"Error uploading file to S3: {e}"}), 500)
+    #         # Upload image locally first
+    #         image_path = os.path.join(upload_folder, unique_image_name)
+    #         image.save(image_path)
 
-    # If all images are uploaded successfully, add the product to the database
-    try:
-        new_product = Product(
-            stock_quantity=product_quantity, 
-            name=product_name, 
-            description=product_description, 
-            price=product_price
-        )
-        db.session.add(new_product)
-        db.session.commit()
+    #         # Upload file data to S3 bucket
+    #         with open(image_path, "rb") as f:
+    #             client.upload_fileobj(f, S3_BUCKET_NAME, unique_image_name)
 
-        # Now add the images to the ProductImage table
-        for img in image_urls:
-            product_image = ProductImage(
-                image_name=img["image_name"], 
-                image_url=img["image_url"], 
-                product_id=new_product.id
-            )
-            db.session.add(product_image)
+    #         # Append image URL to the list
+    #         image_url = f"{S3_BASE_URL}{unique_image_name}"
+    #         image_urls.append({"image_name": unique_image_name, "image_url": image_url})
 
-        db.session.commit()  # Commit changes to the database after all images are uploaded successfully
-        return make_response(jsonify({"success": "Product added successfully!"}), 201)
-    except Exception as e:
-        # Rollback the database transaction if an error occurs
-        db.session.rollback()
-        print(f"Error adding product to the database: {e}")
-        return make_response(jsonify({"error": "Error adding product to the database. Try again later."}), 500)
+    # except ClientError as e:
+    #     # Handle specific errors returned by the S3 operation
+    #     error_message = e.response['Error']['Message']
+    #     print(f"Error uploading file to S3: {error_message}")
+    #     return make_response(jsonify({"error": f"Error uploading file to S3: {error_message}"}), 500)
+
+    # except Exception as e:
+    #     # Handle other exceptions
+    #     print(f"Error uploading file to S3: {e}")
+    #     return make_response(jsonify({"error": f"Error uploading file to S3: {e}"}), 500)
+
+    # # If all images are uploaded successfully, add the product to the database
+    # try:
+    #     new_product = Product(
+    #         stock_quantity=product_quantity, 
+    #         name=product_name, 
+    #         description=product_description, 
+    #         price=product_price
+    #     )
+    #     db.session.add(new_product)
+    #     db.session.commit()
+
+    #     # Now add the images to the ProductImage table
+    #     for img in image_urls:
+    #         product_image = ProductImage(
+    #             image_name=img["image_name"], 
+    #             image_url=img["image_url"], 
+    #             product_id=new_product.id
+    #         )
+    #         db.session.add(product_image)
+
+    #     db.session.commit()  # Commit changes to the database after all images are uploaded successfully
+    #     return make_response(jsonify({"success": "Product added successfully!"}), 201)
+    # except Exception as e:
+    #     # Rollback the database transaction if an error occurs
+    #     db.session.rollback()
+    #     print(f"Error adding product to the database: {e}")
+    #     return make_response(jsonify({"error": "Error adding product to the database. Try again later."}), 500)
 
 
 @app.route("/admin/products/<int:product_id>", methods=["GET", "POST"])
