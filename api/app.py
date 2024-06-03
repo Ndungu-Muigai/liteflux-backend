@@ -117,13 +117,13 @@ def add_product():
 
             # Upload image to S3 bucket
             try:
-                s3_client.put_object(Bucket=S3_BUCKET_NAME,Key=unique_image_name,Body=image,ACL="public",Metadata={ # Defines metadata tags.
-                      'x-amz-meta-my-key': 'jadbcvkbcksbcksnksan'
-                  })
+                s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=unique_image_name, Body=image, ACL="public", Metadata={ 
+                    'x-amz-meta-my-key': 'jadbcvkbcksbcksnksan'
+                })
                 image_url = f"{S3_BASE_URL}{unique_image_name}"
                 image_urls.append({"image_name": unique_image_name, "image_url": image_url})
             except NoCredentialsError:
-                return jsonify({"error": "S3 credentials not available"}), 500
+                    return jsonify({"error": "S3 credentials not available"}), 500
 
         # If all images are uploaded successfully, add the product to the database
         new_product = Product(
