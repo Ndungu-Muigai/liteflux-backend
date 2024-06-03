@@ -1,5 +1,5 @@
-from boto3 import session
-from botocore.exceptions import ClientError
+import boto3 
+import boto3.session
 from flask import Flask, jsonify, request, make_response
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -39,18 +39,20 @@ AWS_ACCESS_KEY_ID =os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY =os.getenv("AWS_SECRET_ACCESS_KEY")
 S3_REGION_NAME = "nyc3"
 S3_BUCKET_NAME = "liteflux-product-images"
-
+S3_ENDPOINT_URL='https://nyc3.digitaloceanspaces.com'
 S3_BASE_URL = f"https://{S3_BUCKET_NAME}.{S3_REGION_NAME}.digitaloceanspaces.com/"
 
-session=session.Session()
+# session=session.Session()
 
-client=session.client( "s3",
-    region_name=S3_REGION_NAME,
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    endpoint_url='https://nyc3.digitaloceanspaces.com',
-)
+# client=session.client( "s3",
+#     region_name=S3_REGION_NAME,
+#     aws_access_key_id=AWS_ACCESS_KEY_ID,
+#     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+#     endpoint_url='https://nyc3.digitaloceanspaces.com',
+# )
 
+session=boto3.session.Session()
+s3_client=session.client("s3",region_name="nyc3",endpoint_url=S3_ENDPOINT_URL, aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 @app.route("/")
 def index():
     return {"message": "Welcome to the API"}
@@ -126,7 +128,18 @@ def add_product():
         #Uploading the image locally
         image_path=os.path.join(upload_folder, unique_image_name)
         image.save(image_path)
-        return make_response(jsonify({"success": "Image saved successfully!", "path": f"{image_path}"}))
+
+
+        #Getting the image name
+        image_name=os.path.basename(image_path)
+
+        #Uploading the image to the S3 bucket
+        try:
+            s3_client.upload_file(image_path,S3_BUCKET_NAME,image_name)
+            return make_response(jsonify({"success": "Images transferred to S3 successfully!"}),200)
+        except Exception as e:
+            return make_response(jsonify({"error": f"Error uploading image to Digital Ocean: {e}"}),404)
+        # return make_response(jsonify({"success": "Image saved successfully!", "path": f"{image_path}"}))
     
     # try:
     #     images = request.files.getlist("product_images")
