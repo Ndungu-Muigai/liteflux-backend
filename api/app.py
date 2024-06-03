@@ -42,7 +42,7 @@ S3_BASE_URL = f"https://{S3_BUCKET_NAME}.{S3_REGION_NAME}.digitaloceanspaces.com
 session = boto3.session.Session()
 s3_client = session.client(
     "s3",
-    region_name=S3_REGION_NAME,
+    region_name="nyc3",
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
     endpoint_url='https://nyc3.digitaloceanspaces.com',
