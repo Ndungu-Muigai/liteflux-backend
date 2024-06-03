@@ -118,16 +118,20 @@ def add_product():
             image_name = secure_filename(image.filename)
             unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-            #Upload image locally first
+            # Upload image locally first
             image_path = os.path.join(upload_folder, unique_image_name)
             image.save(image_path)
 
             # Upload file data to S3 bucket
-            client.upload_file(f"/tmp/{unique_image_name}",S3_BUCKET_NAME,unique_image_name)
+            client.upload_file(image_path, S3_BUCKET_NAME, unique_image_name)
 
             # Append image URL to the list
             image_url = f"{S3_BASE_URL}{unique_image_name}"
             image_urls.append({"image_name": unique_image_name, "image_url": image_url})
+
+    except Exception as e:
+        # Handle the exception
+        print(f"Error uploading file to S3: {e}")
             
         # If all images are uploaded successfully, add the product to the database
         new_product = Product(
