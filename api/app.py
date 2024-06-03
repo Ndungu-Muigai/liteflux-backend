@@ -117,12 +117,8 @@ def add_product():
     # Getting the images from the form
     images = request.files.getlist("product_images")
 
-    # Declaring the upload folder
-    upload_folder = "/Uploads"
-
-    # Create the upload folder if it doesn't exist
-    if not os.path.exists(upload_folder):
-        os.makedirs(upload_folder)
+    # Declaring the upload folder (using /tmp for writable space in cloud environments)
+    upload_folder = "/tmp"
 
     # Looping through the images and saving them to the upload location
     for image in images:
