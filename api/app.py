@@ -96,51 +96,55 @@ def add_product():
     product_price = float(request.form["product_price"])
     product_quantity = int(request.form["product_quantity"])
 
-    products = Product.query.all()
+    existing_product = Product.query.filter_by(name=product_name).first()
+    if existing_product:
+        return jsonify({"error": "Product already exists"}), 400
 
-    for product in products:
-        if product.name == product_name:
-            return jsonify({"error": "Product already exists"}), 400
-        
+    # List to store image URLs to be added to the product
+    image_urls = []
     try:
-        new_product = Product(stock_quantity=product_quantity, name=product_name, description=product_description, price=product_price)
-        db.session.add(new_product)
-        db.session.commit()
-
-        # Uploading the images
         images = request.files.getlist("product_images")
 
         for image in images:
-            try:
-                image_name = secure_filename(image.filename)
-                unique_image_name = str(uuid.uuid1()) + "_" + image_name
+            image_name = secure_filename(image.filename)
+            unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-                # Upload the image to DigitalOcean Spaces
-                client.put_object(
-                    Bucket="liteflux-product-images",
-                    Key=unique_image_name,
-                    Body=image,
-                    ACL="public-read"  # Optional: set the ACL to public-read
-                )
+            # Upload the image to DigitalOcean Spaces
+            client.put_object(
+                Bucket="liteflux-product-images",
+                Key=unique_image_name,
+                Body=image,
+                ACL="public-read"  # Optional: set the ACL to public-read
+            )
 
-                image_url = f"https://liteflux-product-images.nyc3.digitaloceanspaces.com/{unique_image_name}"
-                product_image = ProductImage(image_name=unique_image_name, image_url=image_url, product_id=new_product.id)
-                db.session.add(product_image)
+            image_url = f"https://liteflux-product-images.nyc3.digitaloceanspaces.com/{unique_image_name}"
+            image_urls.append({"image_name": unique_image_name, "image_url": image_url})
 
-            except Exception as e:
-                db.session.rollback()  # Rollback the database transaction if an error occurs
-                return make_response(jsonify({"error": str(e)}), 500)
+        # If all images are uploaded successfully, add the product to the database
+        new_product = Product(
+            stock_quantity=product_quantity, 
+            name=product_name, 
+            description=product_description, 
+            price=product_price
+        )
+        db.session.add(new_product)
+        db.session.commit()
+
+        # Now add the images to the ProductImage table
+        for img in image_urls:
+            product_image = ProductImage(
+                image_name=img["image_name"], 
+                image_url=img["image_url"], 
+                product_id=new_product.id
+            )
+            db.session.add(product_image)
 
         db.session.commit()  # Commit changes to the database after all images are uploaded successfully
         return make_response(jsonify({"success": "Product added successfully!"}), 201)
-        
+
     except Exception as e:
         db.session.rollback()  # Rollback the database transaction if an error occurs
-        return make_response(jsonify({"error": "Error creating new product. Please try again later"}), 500)
-
-# @app.route('/images/<filename>')
-# def get_image(filename):
-#     return send_from_directory('/tmp', filename, as_attachment=True)
+        return make_response(jsonify({"error": str(e)}), 500)
 
 @app.route("/admin/products/<int:product_id>", methods=["GET", "POST"])
 @jwt_required()
