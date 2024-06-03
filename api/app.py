@@ -1,4 +1,5 @@
 import boto3
+from botocore.exceptions import NoCredentialsError
 from flask import Flask, jsonify, request, make_response
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -32,6 +33,18 @@ migrate = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 
+# Define DigitalOcean S3 bucket settings
+S3_BUCKET_NAME = "liteflux-product-images"
+S3_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
+S3_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+S3_REGION_NAME = "nyc3"
+S3_BASE_URL = f"https://{S3_BUCKET_NAME}.{S3_REGION_NAME}.digitaloceanspaces.com/"
+s3_client = boto3.client(
+    "s3",
+    aws_access_key_id=S3_ACCESS_KEY,
+    aws_secret_access_key=S3_SECRET_KEY,
+    region_name=S3_REGION_NAME
+)
 
 @app.route("/")
 def index():
@@ -100,10 +113,13 @@ def add_product():
             image_name = secure_filename(image.filename)
             unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-            image.save("https://liteflux-product-images.nyc3.digitaloceanspaces.com/Images",unique_image_name)
-
-            image_url = f"https://liteflux-product-images.nyc3.digitaloceanspaces.com/{unique_image_name}"
-            image_urls.append({"image_name": unique_image_name, "image_url": image_url})
+            # Upload image to S3 bucket
+            try:
+                s3_client.upload_fileobj(image, S3_BUCKET_NAME, unique_image_name)
+                image_url = f"{S3_BASE_URL}{unique_image_name}"
+                image_urls.append({"image_name": unique_image_name, "image_url": image_url})
+            except NoCredentialsError:
+                return jsonify({"error": "S3 credentials not available"}), 500
 
         # If all images are uploaded successfully, add the product to the database
         new_product = Product(
