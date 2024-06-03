@@ -28,12 +28,11 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "postgres://default:L2HzhlpSWwm9@ep-supe
 # Email sender configuration
 app.config["SENDER_NAME"] = "Liteflux Enterprises"
 app.config["SENDER_EMAIL"] = "info@litefluxent.com"
-
+app.config['UPLOAD_FOLDER']="https://liteflux-product-images.nyc3.digitaloceanspaces.com/Images"
 migrate = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 
-s3_client=boto3.client("s3")
 
 @app.route("/")
 def index():
@@ -102,15 +101,7 @@ def add_product():
             image_name = secure_filename(image.filename)
             unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-            # Read the image file and convert it to a byte stream
-            image_bytes = image.read()
-
-            # Ensure image is read correctly
-            if not image_bytes:
-                raise ValueError("Image file is empty or could not be read")
-
-            # Upload the image to DigitalOcean Spaces
-            s3_client.upload_file(unique_image_name, "liteflux-product-images",unique_image_name)
+            image.save(app.config["UPLOAD_FOLDER"])
 
             image_url = f"https://liteflux-product-images.nyc3.digitaloceanspaces.com/{unique_image_name}"
             image_urls.append({"image_name": unique_image_name, "image_url": image_url})
