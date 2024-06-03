@@ -132,7 +132,7 @@ def add_product():
     except Exception as e:
         # Handle the exception
         print(f"Error uploading file to S3: {e}")
-        return make_response(jsonify({"error": e}), 500)
+        return make_response(jsonify({"error": f"Error uploading file to S3: {e}"}), 500)
 
     # If all images are uploaded successfully, add the product to the database
     try:
