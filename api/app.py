@@ -116,10 +116,12 @@ def add_product():
             unique_image_name = str(uuid.uuid1()) + "_" + secure_filename(image.filename)
 
             # Upload file data to S3 bucket
-            with s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=unique_image_name, ACL='public-read', Body=image.read()) as file:
-                file.content_length = len(image.read())
-            # s3_client.upload_file(image,S3_BUCKET_NAME,unique_image_name)
+            s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=unique_image_name, ACL='public-read', Body=image_bytes)
 
+            # Append image URL to the list
+            image_url = f"{S3_BASE_URL}{unique_image_name}"
+            image_urls.append({"image_name": unique_image_name, "image_url": image_url})
+            
         # If all images are uploaded successfully, add the product to the database
         new_product = Product(
             stock_quantity=product_quantity, 
