@@ -45,7 +45,7 @@ s3_client = boto3.client(
     region_name=S3_REGION_NAME,
     aws_access_key_id=AWS_ACCESS_KEY_ID,
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    # endpoint_url='https://nyc3.digitaloceanspaces.com',
+    endpoint_url='https://nyc3.digitaloceanspaces.com',
 )
 
 @app.route("/")
