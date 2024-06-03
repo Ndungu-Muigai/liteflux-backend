@@ -123,7 +123,8 @@ def add_product():
             image.save(image_path)
 
             # Upload file data to S3 bucket
-            client.upload_file(image_path, S3_BUCKET_NAME, unique_image_name)
+            with open(image_path, "rb") as f:
+                client.upload_fileobj(f, S3_BUCKET_NAME, unique_image_name)
 
             # Append image URL to the list
             image_url = f"{S3_BASE_URL}{unique_image_name}"
