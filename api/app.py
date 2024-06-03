@@ -1,4 +1,4 @@
-import boto3
+from boto3 import session
 from flask import Flask, jsonify, request, make_response
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -41,8 +41,9 @@ S3_BUCKET_NAME = "liteflux-product-images"
 
 S3_BASE_URL = f"https://{S3_BUCKET_NAME}.{S3_REGION_NAME}.digitaloceanspaces.com/"
 
-s3_client = boto3.client(
-    "s3",
+session=session.Session()
+
+client=session.client( "s3",
     region_name=S3_REGION_NAME,
     aws_access_key_id=AWS_ACCESS_KEY_ID,
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
@@ -111,14 +112,18 @@ def add_product():
     image_urls = []
     try:
         images = request.files.getlist("product_images")
+        upload_folder = '/tmp'
+
         for image in images:
-            image_bytes = image.read()  # Read file data as bytes
-            unique_image_name = str(uuid.uuid1()) + "_" + secure_filename(image.filename)
+            image_name = secure_filename(image.filename)
+            unique_image_name = str(uuid.uuid1()) + "_" + image_name
+
+            #Upload image locally first
+            image_path = os.path.join(upload_folder, unique_image_name)
+            image.save(image_path)
 
             # Upload file data to S3 bucket
-            # s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=unique_image_name, ACL='public-read', Body=image_bytes)
-
-            s3_client.upload_file(image_bytes,S3_BUCKET_NAME,unique_image_name)
+            client.upload_file(f"/tmp/{unique_image_name}",S3_BUCKET_NAME,unique_image_name)
 
             # Append image URL to the list
             image_url = f"{S3_BASE_URL}{unique_image_name}"
