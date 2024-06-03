@@ -112,13 +112,19 @@ def add_product():
             # Read the image file and convert it to a byte stream
             image_bytes = image.read()
 
+            # Ensure image is read correctly
+            if not image_bytes:
+                raise ValueError("Image file is empty or could not be read")
+
             # Upload the image to DigitalOcean Spaces
-            client.put_object(
+            response = client.put_object(
                 Bucket="liteflux-product-images",
                 Key=unique_image_name,
                 Body=image_bytes,
                 ACL="public-read"
             )
+
+            print(f"Upload response: {response}")
 
             image_url = f"https://liteflux-product-images.nyc3.digitaloceanspaces.com/{unique_image_name}"
             image_urls.append({"image_name": unique_image_name, "image_url": image_url})
