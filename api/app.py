@@ -209,6 +209,35 @@ def orders():
     orders_details = OrderSchema(only=("id", "first_name", "last_name", "delivery_address", "status")).dump(orders, many=True)
     return make_response(jsonify(orders_details))
 
+@app.route("/client/orders", methods=["POST"])
+def post_orders():
+
+    first_name=request.json("first_name")
+    last_name=request.json("last_name")
+    email=request.json("email")
+    phone=request.json("phone")
+    county=request.json("county")
+    sub_county=request.json("sub_county")
+    ward=request.json("ward")
+    street=request.json("street")
+    amount=request.json("amount")
+    product_ids=request.json("product_ids")
+
+    return make_response(jsonify(
+        {
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email,
+            "phone": phone,
+            "county": county,
+            "sub_county": sub_county,
+            "ward": ward,
+            "street": street,
+            "amount": amount,
+            "product_ids": product_ids,
+        }
+    ), 200)
+
 @app.route("/admin/orders/<int:order_id>", methods=["GET", "POST"])
 @jwt_required()
 def order_by_id(order_id):
