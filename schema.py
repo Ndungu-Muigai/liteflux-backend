@@ -33,4 +33,4 @@ class OrderSchema(Schema):
     amount = fields.Float(required=True)
     status = fields.Str(required=True)
     order_date = fields.DateTime(required=True)
-    products = fields.List(fields.Nested(ProductSchema), required=True)
+    products = fields.Str(required=True)

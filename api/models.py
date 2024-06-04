@@ -37,9 +37,7 @@ class Order(db.Model):
     amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.Enum('Pending', 'Processing', 'Completed',name="status"), default='Pending')
     order_date = db.Column(db.DateTime, server_default=db.func.now())
-
-    #Define the relationship with OrderProduct
-    products = db.relationship('OrderProduct', backref='order', lazy=True)
+    product_ids = db.Column(db.String, nullable=False)
 
 class OrderProduct(db.Model):
 
