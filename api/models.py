@@ -30,7 +30,6 @@ class Order(db.Model):
     last_name = db.Column(db.String(40), nullable=False)
     email = db.Column(db.String, nullable=False)
     phone = db.Column(db.String(12), nullable=False)
-    delivery_address = db.Column(db.String, nullable=False)
     county=db.Column(db.String, nullable=False)
     sub_county=db.Column(db.String, nullable=False)
     ward=db.Column(db.String, nullable=False)
