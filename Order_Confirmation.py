@@ -15,13 +15,13 @@ def confirm_order(first_name, last_name, email, order_id):
     order_products=[]
 
     order_response=requests.get(f"https://api.litefluxent.com/client/orders/{order_id}")
-
+    order=order_response.json()
     subject="Order confirmation"
     sender={"name": app.app.config["SENDER_NAME"], "email": app.app.config["SENDER_EMAIL"]}
     email_content=f"""
     <p>Dear {first_name} {last_name},</p>
     <p>Your order with ID {order_id} has been successfully created</p>
-    {order_response}
+    {order}
     <p>We will inform you once the product is ready for delivery</p>
     <b>NB:This is an system generated email. Please DO NOT reply to this email thread.</b>
     """
