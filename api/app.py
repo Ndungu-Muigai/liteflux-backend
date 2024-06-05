@@ -212,16 +212,16 @@ def orders():
 @app.route("/client/orders", methods=["POST"])
 def post_orders():
 
-    first_name=request.json("first_name")
-    last_name=request.json("last_name")
-    email=request.json("email")
-    phone=request.json("phone")
-    county=request.json("county")
-    sub_county=request.json("sub_county")
-    ward=request.json("ward")
-    street=request.json("street")
-    amount=request.json("amount")
-    product_ids=request.json("product_ids")
+    first_name=request.json["first_name"]
+    last_name=request.json["last_name"]
+    email=request.json["email"]
+    phone=request.json["phone"]
+    county=request.json["county"]
+    sub_county=request.json["sub_county"]
+    ward=request.json["ward"]
+    street=request.json["street"]
+    amount=request.json["amount"]
+    product_ids=request.json["product_ids"]
 
     return make_response(jsonify(
         {
