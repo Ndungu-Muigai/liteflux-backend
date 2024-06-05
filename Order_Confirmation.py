@@ -14,6 +14,7 @@ api_instance=sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(conf
 
 def confirm_order(first_name, last_name, email, product_ids, order_id):
     for id in product_ids:
+        id=int(id)
         order_products.append(products[id])
     
     subject="Order confirmation"
