@@ -230,7 +230,7 @@ def post_orders():
     db.session.commit()
 
     for product in products:
-        new_order_product=OrderProduct(product_id=product.id,order_id=new_order.id, quantity=product.quantity)
+        new_order_product = OrderProduct(product_id=product['id'], order_id=new_order.id, quantity=product['quantity'])
         db.session.add(new_order_product)
     
     db.session.commit()
