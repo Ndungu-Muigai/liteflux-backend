@@ -206,7 +206,7 @@ def product_by_id(product_id):
 def orders():
     email = get_jwt_identity()
     orders = Order.query.all()
-    orders_details = OrderSchema(only=("id", "first_name", "last_name", "delivery_address", "status")).dump(orders, many=True)
+    orders_details = OrderSchema(only=("id", "first_name", "last_name", "county", "sub_county", "ward", "street", "status")).dump(orders, many=True)
     return make_response(jsonify(orders_details))
 
 @app.route("/client/orders", methods=["POST"])
