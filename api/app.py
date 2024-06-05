@@ -237,6 +237,12 @@ def post_orders():
     confirm_order(first_name=first_name, order_id=new_order.id, product_ids=products, email=email, last_name=last_name)
     return make_response(jsonify({"success":"Order placed successfully!"}), 200)
 
+@app.route("/client/orders/<int:order_id>", methods=["GET", "POST"])
+def client_order_by_id(order_id):
+    order = Order.query.filter_by(id=order_id).first()
+    order_details = OrderSchema().dump(order)
+    return make_response(jsonify(order_details))
+
 @app.route("/admin/orders/<int:order_id>", methods=["GET", "POST"])
 @jwt_required()
 def order_by_id(order_id):
