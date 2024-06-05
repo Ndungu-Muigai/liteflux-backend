@@ -227,7 +227,7 @@ def post_orders():
     db.session.add(new_order)
     db.session.commit()
 
-    return make_response(jsonify(new_order.id), 200)
+    return make_response(jsonify({"success":"Order placed successfully!"}), 200)
 
 @app.route("/admin/orders/<int:order_id>", methods=["GET", "POST"])
 @jwt_required()
