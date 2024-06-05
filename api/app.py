@@ -13,6 +13,7 @@ from Admin_creation import send_admin_credentials
 from AutoGenerations.password import random_password
 import os
 import io
+from Order_Confirmation import confirm_order
 
 app = Flask(__name__)
 # Initialize JWT
@@ -224,9 +225,10 @@ def post_orders():
     product_ids=request.json["product_ids"]
 
     new_order=Order(first_name=first_name, email=email, amount=amount, product_ids=product_ids, last_name=last_name, phone=phone, county=county, sub_county=sub_county, ward=ward, street=street)
+    
     db.session.add(new_order)
     db.session.commit()
-
+    confirm_order(first_name=first_name, order_id=new_order.id, product_ids=product_ids, email=email, last_name=last_name)
     return make_response(jsonify({"success":"Order placed successfully!"}), 200)
 
 @app.route("/admin/orders/<int:order_id>", methods=["GET", "POST"])
