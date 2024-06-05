@@ -223,20 +223,11 @@ def post_orders():
     amount=request.json["amount"]
     product_ids=request.json["product_ids"]
 
-    return make_response(jsonify(
-        {
-            "first_name": first_name,
-            "last_name": last_name,
-            "email": email,
-            "phone": phone,
-            "county": county,
-            "sub_county": sub_county,
-            "ward": ward,
-            "street": street,
-            "amount": amount,
-            "product_ids": product_ids,
-        }
-    ), 200)
+    new_order=Order(first_name=first_name, email=email, amount=amount, product_ids=product_ids, last_name=last_name, phone=phone, county=county, sub_county=sub_county, ward=ward, street=street)
+    db.session.add(new_order)
+    db.session.commit()
+
+    return make_response(jsonify(new_order), 200)
 
 @app.route("/admin/orders/<int:order_id>", methods=["GET", "POST"])
 @jwt_required()
