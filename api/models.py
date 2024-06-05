@@ -30,25 +30,26 @@ class Order(db.Model):
     last_name = db.Column(db.String(40), nullable=False)
     email = db.Column(db.String, nullable=False)
     phone = db.Column(db.String(12), nullable=False)
-    county=db.Column(db.String, nullable=False)
-    sub_county=db.Column(db.String, nullable=False)
-    ward=db.Column(db.String, nullable=False)
-    street=db.Column(db.String, nullable=False)
+    county = db.Column(db.String, nullable=False)
+    sub_county = db.Column(db.String, nullable=False)
+    ward = db.Column(db.String, nullable=False)
+    street = db.Column(db.String, nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    status = db.Column(db.Enum('Pending', 'Processing', 'Completed',name="status"), default='Pending')
+    status = db.Column(db.Enum('Pending', 'Processing', 'Completed', name="status"), default='Pending')
     order_date = db.Column(db.DateTime, server_default=db.func.now())
-    product_ids = db.Column(db.String, nullable=False)
-
+    
+    # Relationship with OrderProduct
+    order_products = db.relationship("OrderProduct", back_populates="order")
+    
 class OrderProduct(db.Model):
-
     __tablename__ = "order_products"
     id = db.Column(db.Integer, primary_key=True)
-    product_id= db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
-    quantity= db.Column(db.Integer, nullable=False)
-
-    # Define relationship with Product
-    product = db.relationship('Product', backref='order_products')
+    quantity = db.Column(db.Integer, nullable=False)
+    
+    # Relationships
+    order = db.relationship("Order", back_populates="order_products")
 
 class Admins(db.Model):
     __tablename__ = "admins"

@@ -20,6 +20,12 @@ class ProductSchema(Schema):
     stock_quantity = fields.Int(required=True)
     images = fields.List(fields.Nested(ImageSchema), required=True)
 
+class OrderProductsSchema(Schema):
+    id=fields.Int(required=True)
+    product_id=fields.Int(required=True)
+    order_id=fields.Int(required=True)
+    quantity=fields.Int(required=True)
+
 class OrderSchema(Schema):
     id = fields.Int(required=True)
     first_name = fields.Str(required=True)
@@ -33,4 +39,4 @@ class OrderSchema(Schema):
     amount = fields.Float(required=True)
     status = fields.Str(required=True)
     order_date = fields.DateTime(required=True)
-    products = fields.Str(required=True)
+    products = fields.Nested(OrderProductsSchema,required=True)
