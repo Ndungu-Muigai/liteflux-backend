@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 import uuid
 from api.models import db, Order, Product, Admins, ProductImage, OrderProduct
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from schema import AdminSchema, OrderSchema, ProductSchema
+from schema import AdminSchema, OrderSchema, ProductSchema, OrderProductsSchema
 from datetime import timedelta
 from Admin_creation import send_admin_credentials
 from AutoGenerations.password import random_password
@@ -242,6 +242,11 @@ def client_order_by_id(order_id):
     order = Order.query.get(order_id)
     if order:
         order_details = OrderSchema().dump(order)
+        # Manually include nested products data
+        order_details["products"] = []
+        for order_product in order.products:
+            order_product_data = OrderProductsSchema().dump(order_product)
+            order_details["products"].append(order_product_data)
         return make_response(jsonify(order_details), 200)
     else:
         return make_response(jsonify({"error": "Order not found"}), 404)
