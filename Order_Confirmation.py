@@ -42,14 +42,7 @@ def confirm_order(first_name, last_name, email, order_id):
             </tr>
         </thead>
         <tbody>
-            {''.join([f"""
-                <tr>
-                    <td>
-                        <img src='{product['image']}' alt={product['name']} width='100' height='100'>
-                    </td>
-                    <td>{product['name']}</td>
-                    <td>{order_product['quantity']}</td>
-                </tr>""" for order_product, product in zip(order_products, product_details)])}
+            {''.join([f"<tr><td><img src='{product['image']}' alt={product['name']} width='100' height='100'></td><td>{product['name']}</td><td>{order_product['quantity']}</td></tr>" for order_product, product in zip(order_products, product_details)])}
         </tbody>
     </table>
     <b>NB: This is a system-generated email. Please DO NOT reply to this email thread.</b>
