@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 import os
+from sqlalchemy.orm import sessionmaker
 
 db = SQLAlchemy()
 
