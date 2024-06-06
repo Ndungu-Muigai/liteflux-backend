@@ -26,7 +26,7 @@ def confirm_order(first_name, last_name, email, order_id, new_order_id):
         product = product_response.json()
         product_details.append(product)
 
-    subject = "Order confirmation"
+    subject = f"Order confirmation- {new_order_id}"
     sender = {"name": app.app.config["SENDER_NAME"], "email": app.app.config["SENDER_EMAIL"]}
     email_content = f"""
     <p>Dear {first_name} {last_name},</p>
