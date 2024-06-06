@@ -22,7 +22,7 @@ def confirm_order(first_name, last_name, email, order_id):
     # Mapping through the order products
     for order_product in order_products:
         # Fetching the product details from the products API
-        product_response = requests.get(f"https://products.litefluxent.com/products/{order_product['id']}")
+        product_response = requests.get(f"https://products.litefluxent.com/products/{order_product['order_id']}")
         product = product_response.json()
         product_details.append(product)
 
