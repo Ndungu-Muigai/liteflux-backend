@@ -42,7 +42,8 @@ class ProductImage(db.Model):
 
 class Order(db.Model):
     __tablename__ = 'orders'
-    id = db.Column(db.String, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    order_id = db.Column(db.String, unique=True, nullable=False)
     first_name = db.Column(db.String(40), nullable=False)
     last_name = db.Column(db.String(40), nullable=False)
     email = db.Column(db.String, nullable=False)
@@ -60,17 +61,14 @@ class Order(db.Model):
 
     def __init__(self, *args, **kwargs):
         super(Order, self).__init__(*args, **kwargs)
-        if self.id is None:
-            self.id = self.generate_order_id()
+        if self.order_id is None:
+            self.order_id = self.generate_order_id()
 
     @staticmethod
     def generate_order_id():
-        # Assuming you have access to the session
-        # session = sessionmaker(bind=engine)()
-        # last_order = session.query(Order).order_by(Order.id.desc()).first()
-        last_order=Order.query.order_by(Order.id.desc()).first()
-        if last_order and last_order.id:
-            last_id_number = int(last_order.id.split('-')[-1])
+        last_order = db.session.query(Order).order_by(Order.id.desc()).first()
+        if last_order and last_order.order_id:
+            last_id_number = int(last_order.order_id.split('-')[-1])
             new_id_number = last_id_number + 1
         else:
             new_id_number = 1
