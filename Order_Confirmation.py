@@ -2,10 +2,11 @@ import sib_api_v3_sdk
 import os
 from api import app
 import requests
+from api.models import OrderProduct
 
-configuration = sib_api_v3_sdk.Configuration()
+configuration=sib_api_v3_sdk.Configuration()
 configuration.api_key["api-key"] = os.environ.get("SENDINBLUE_API_KEY")
-api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+api_instance=sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
 
 def confirm_order(first_name, last_name, email, order_id):
     # Fetching the order from the backend 
