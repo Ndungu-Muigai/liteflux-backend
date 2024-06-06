@@ -234,7 +234,7 @@ def post_orders():
         db.session.add(new_order_product)
     
     db.session.commit()
-    confirm_order(first_name=first_name, order_id=new_order.order_id, email=email, last_name=last_name)
+    confirm_order(first_name=first_name, order_id=new_order.id, new_order_id=new_order.order_id, email=email, last_name=last_name)
     return make_response(jsonify({"success":"Order placed successfully!"}), 200)
 
 @app.route("/client/orders/<int:order_id>", methods=["GET"])

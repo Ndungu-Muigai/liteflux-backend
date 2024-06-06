@@ -8,7 +8,7 @@ configuration=sib_api_v3_sdk.Configuration()
 configuration.api_key["api-key"] = os.environ.get("SENDINBLUE_API_KEY")
 api_instance=sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
 
-def confirm_order(first_name, last_name, email, order_id):
+def confirm_order(first_name, last_name, email, order_id, new_order_id):
     # Fetching the order from the backend 
     order_response = requests.get(f"https://api.litefluxent.com/client/orders/{order_id}")
     order = order_response.json()
@@ -30,7 +30,7 @@ def confirm_order(first_name, last_name, email, order_id):
     sender = {"name": app.app.config["SENDER_NAME"], "email": app.app.config["SENDER_EMAIL"]}
     email_content = f"""
     <p>Dear {first_name} {last_name},</p>
-    <p>Your order with ID {order_id} has been successfully created</p>
+    <p>Your order with ID {new_order_id} has been successfully created</p>
     <p>We will inform you once the product is ready for delivery</p>
 
     <table>
