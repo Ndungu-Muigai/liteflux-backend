@@ -62,16 +62,16 @@ class Order(db.Model):
 
     def __init__(self, *args, **kwargs):
         super(Order, self).__init__(*args, **kwargs)
-        if self.order_id is None:
-            self.order_id = self.generate_order_id()
+        if self.id is None:
+            self.id = self.generate_order_id()
 
     @staticmethod
     def generate_order_id():
         # Assuming you have access to the session
         session = sessionmaker(bind=engine)()
         last_order = session.query(Order).order_by(Order.id.desc()).first()
-        if last_order and last_order.order_id:
-            last_id_number = int(last_order.order_id.split('-')[-1])
+        if last_order and last_order.id:
+            last_id_number = int(last_order.id.split('-')[-1])
             new_id_number = last_id_number + 1
         else:
             new_id_number = 1
