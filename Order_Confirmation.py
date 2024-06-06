@@ -31,8 +31,7 @@ def confirm_order(first_name, last_name, email, order_id):
     email_content = f"""
     <p>Dear {first_name} {last_name},</p>
     <p>Your order with ID {order_id} has been successfully created</p>
-    {order}
-    {product_details}  # Assuming this is a list of product dictionaries
+    {product_details} 
     <p>We will inform you once the product is ready for delivery</p>
 
     <table>
