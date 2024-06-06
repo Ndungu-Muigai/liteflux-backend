@@ -1,6 +1,6 @@
 import sib_api_v3_sdk
 import os
-from api.app import app
+from api import app
 import requests
 from api.models import OrderProduct
 
@@ -24,7 +24,7 @@ def confirm_order(first_name, last_name, email, order_id):
         product=product_response.json()
 
     subject="Order confirmation"
-    sender={"name": app.config["SENDER_NAME"], "email": app.config["SENDER_EMAIL"]}
+    sender={"name": app.app.config["SENDER_NAME"], "email": app.app.config["SENDER_EMAIL"]}
     email_content=f"""
     <p>Dear {first_name} {last_name},</p>
     <p>Your order with ID {order_id} has been successfully created</p>
