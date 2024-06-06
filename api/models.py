@@ -21,25 +21,7 @@ class ProductImage(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     image_name = db.Column(db.String(250), nullable=False)
     image_url = db.Column(db.String(250), nullable=False)
-
-# class Order(db.Model):
-    # __tablename__ = 'orders'
-    # id = db.Column(db.Integer, primary_key=True)
-    # first_name = db.Column(db.String(40), nullable=False)
-    # last_name = db.Column(db.String(40), nullable=False)
-    # email = db.Column(db.String, nullable=False)
-    # phone = db.Column(db.String(12), nullable=False)
-    # county = db.Column(db.String, nullable=False)
-    # sub_county = db.Column(db.String, nullable=False)
-    # ward = db.Column(db.String, nullable=False)
-    # street = db.Column(db.String, nullable=False)
-    # amount = db.Column(db.Float, nullable=False)
-    # status = db.Column(db.Enum('Pending', 'Processing', 'Completed', name="status"), default='Pending')
-    # order_date = db.Column(db.DateTime, server_default=db.func.now())
     
-    # # Relationship with OrderProduct
-    # order_products = db.relationship("OrderProduct", back_populates="order")
-
 class Order(db.Model):
     __tablename__ = 'orders'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
