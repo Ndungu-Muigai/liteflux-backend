@@ -31,17 +31,18 @@ def confirm_order(first_name, last_name, email, order_id):
     email_content = f"""
     <p>Dear {first_name} {last_name},</p>
     <p>Your order with ID {order_id} has been successfully created</p>
-    {product_details} 
     <p>We will inform you once the product is ready for delivery</p>
 
     <table>
         <thead>
             <tr>
-                <th colspan='3'>Product summary</th>
+                <th>Product Image</th>
+                <th>Product Name</th>
+                <th>Quantity</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Populate the table with product details -->
+            {''.join([f"<tr><td><img src='{product['image']}' alt='Product Image'></td><td>{product['name']}</td><td>{order_product['quantity']}</td></tr>" for order_product, product in zip(order_products, product_details)])}
         </tbody>
     </table>
     <b>NB: This is a system-generated email. Please DO NOT reply to this email thread.</b>
