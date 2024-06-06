@@ -68,7 +68,7 @@ class Order(db.Model):
         # Assuming you have access to the session
         # session = sessionmaker(bind=engine)()
         # last_order = session.query(Order).order_by(Order.id.desc()).first()
-        last_order=Order.query.filter(Order.id.desc()).first()
+        last_order=Order.query.order_by(Order.id.desc()).first()
         if last_order and last_order.id:
             last_id_number = int(last_order.id.split('-')[-1])
             new_id_number = last_id_number + 1
